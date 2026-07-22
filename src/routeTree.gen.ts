@@ -42,11 +42,18 @@ import { Route as CreatorAchievementsRouteImport } from './routes/creator.achiev
 import { Route as CreatorHandleRouteImport } from './routes/creator.$handle'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminTicketsRouteImport } from './routes/admin.tickets'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminModerationRouteImport } from './routes/admin.moderation'
+import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
 import { Route as AdminCreatorsRouteImport } from './routes/admin.creators'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
 const PublishRoute = PublishRouteImport.update({
   id: '/publish',
@@ -213,9 +220,24 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTicketsRoute = AdminTicketsRouteImport.update({
+  id: '/admin/tickets',
+  path: '/admin/tickets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
   id: '/admin/revenue',
   path: '/admin/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/admin/reports',
+  path: '/admin/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminProductsRoute = AdminProductsRouteImport.update({
@@ -228,6 +250,16 @@ const AdminOrdersRoute = AdminOrdersRouteImport.update({
   path: '/admin/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminModerationRoute = AdminModerationRouteImport.update({
+  id: '/admin/moderation',
+  path: '/admin/moderation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminFlagsRoute = AdminFlagsRouteImport.update({
+  id: '/admin/flags',
+  path: '/admin/flags',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCreatorsRoute = AdminCreatorsRouteImport.update({
   id: '/admin/creators',
   path: '/admin/creators',
@@ -238,6 +270,16 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   path: '/admin/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/admin/analytics',
+  path: '/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -246,11 +288,18 @@ export interface FileRoutesByFullPath {
   '/creators': typeof CreatorsRoute
   '/marketplace': typeof MarketplaceRoute
   '/publish': typeof PublishRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/flags': typeof AdminFlagsRoute
+  '/admin/moderation': typeof AdminModerationRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/tickets': typeof AdminTicketsRoute
   '/admin/users': typeof AdminUsersRoute
   '/category/$slug': typeof CategorySlugRoute
   '/creator/$handle': typeof CreatorHandleRoute
@@ -286,11 +335,18 @@ export interface FileRoutesByTo {
   '/creators': typeof CreatorsRoute
   '/marketplace': typeof MarketplaceRoute
   '/publish': typeof PublishRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/flags': typeof AdminFlagsRoute
+  '/admin/moderation': typeof AdminModerationRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/tickets': typeof AdminTicketsRoute
   '/admin/users': typeof AdminUsersRoute
   '/category/$slug': typeof CategorySlugRoute
   '/creator/$handle': typeof CreatorHandleRoute
@@ -327,11 +383,18 @@ export interface FileRoutesById {
   '/creators': typeof CreatorsRoute
   '/marketplace': typeof MarketplaceRoute
   '/publish': typeof PublishRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/flags': typeof AdminFlagsRoute
+  '/admin/moderation': typeof AdminModerationRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/tickets': typeof AdminTicketsRoute
   '/admin/users': typeof AdminUsersRoute
   '/category/$slug': typeof CategorySlugRoute
   '/creator/$handle': typeof CreatorHandleRoute
@@ -369,11 +432,18 @@ export interface FileRouteTypes {
     | '/creators'
     | '/marketplace'
     | '/publish'
+    | '/admin/analytics'
+    | '/admin/audit'
     | '/admin/categories'
     | '/admin/creators'
+    | '/admin/flags'
+    | '/admin/moderation'
     | '/admin/orders'
     | '/admin/products'
+    | '/admin/reports'
     | '/admin/revenue'
+    | '/admin/settings'
+    | '/admin/tickets'
     | '/admin/users'
     | '/category/$slug'
     | '/creator/$handle'
@@ -409,11 +479,18 @@ export interface FileRouteTypes {
     | '/creators'
     | '/marketplace'
     | '/publish'
+    | '/admin/analytics'
+    | '/admin/audit'
     | '/admin/categories'
     | '/admin/creators'
+    | '/admin/flags'
+    | '/admin/moderation'
     | '/admin/orders'
     | '/admin/products'
+    | '/admin/reports'
     | '/admin/revenue'
+    | '/admin/settings'
+    | '/admin/tickets'
     | '/admin/users'
     | '/category/$slug'
     | '/creator/$handle'
@@ -449,11 +526,18 @@ export interface FileRouteTypes {
     | '/creators'
     | '/marketplace'
     | '/publish'
+    | '/admin/analytics'
+    | '/admin/audit'
     | '/admin/categories'
     | '/admin/creators'
+    | '/admin/flags'
+    | '/admin/moderation'
     | '/admin/orders'
     | '/admin/products'
+    | '/admin/reports'
     | '/admin/revenue'
+    | '/admin/settings'
+    | '/admin/tickets'
     | '/admin/users'
     | '/category/$slug'
     | '/creator/$handle'
@@ -490,11 +574,18 @@ export interface RootRouteChildren {
   CreatorsRoute: typeof CreatorsRoute
   MarketplaceRoute: typeof MarketplaceRoute
   PublishRoute: typeof PublishRoute
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminAuditRoute: typeof AdminAuditRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCreatorsRoute: typeof AdminCreatorsRoute
+  AdminFlagsRoute: typeof AdminFlagsRoute
+  AdminModerationRoute: typeof AdminModerationRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminTicketsRoute: typeof AdminTicketsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   CategorySlugRoute: typeof CategorySlugRoute
   CreatorHandleRoute: typeof CreatorHandleRoute
@@ -757,11 +848,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/tickets': {
+      id: '/admin/tickets'
+      path: '/admin/tickets'
+      fullPath: '/admin/tickets'
+      preLoaderRoute: typeof AdminTicketsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/revenue': {
       id: '/admin/revenue'
       path: '/admin/revenue'
       fullPath: '/admin/revenue'
       preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/admin/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/products': {
@@ -778,6 +890,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/moderation': {
+      id: '/admin/moderation'
+      path: '/admin/moderation'
+      fullPath: '/admin/moderation'
+      preLoaderRoute: typeof AdminModerationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/flags': {
+      id: '/admin/flags'
+      path: '/admin/flags'
+      fullPath: '/admin/flags'
+      preLoaderRoute: typeof AdminFlagsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/creators': {
       id: '/admin/creators'
       path: '/admin/creators'
@@ -792,6 +918,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/admin/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -802,11 +942,18 @@ const rootRouteChildren: RootRouteChildren = {
   CreatorsRoute: CreatorsRoute,
   MarketplaceRoute: MarketplaceRoute,
   PublishRoute: PublishRoute,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminAuditRoute: AdminAuditRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCreatorsRoute: AdminCreatorsRoute,
+  AdminFlagsRoute: AdminFlagsRoute,
+  AdminModerationRoute: AdminModerationRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,
+  AdminReportsRoute: AdminReportsRoute,
   AdminRevenueRoute: AdminRevenueRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminTicketsRoute: AdminTicketsRoute,
   AdminUsersRoute: AdminUsersRoute,
   CategorySlugRoute: CategorySlugRoute,
   CreatorHandleRoute: CreatorHandleRoute,
