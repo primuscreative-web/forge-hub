@@ -15,9 +15,17 @@ import { Route as CreatorsRouteImport } from './routes/creators'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as CreatorIndexRouteImport } from './routes/creator.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as SettingsSecurityRouteImport } from './routes/settings.security'
+import { Route as SettingsOrganizationRouteImport } from './routes/settings.organization'
+import { Route as SettingsNotificationsRouteImport } from './routes/settings.notifications'
+import { Route as SettingsConnectedRouteImport } from './routes/settings.connected'
+import { Route as SettingsBillingRouteImport } from './routes/settings.billing'
+import { Route as SettingsAppearanceRouteImport } from './routes/settings.appearance'
+import { Route as SettingsApiKeysRouteImport } from './routes/settings.api-keys'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as DashboardWishlistRouteImport } from './routes/dashboard.wishlist'
 import { Route as DashboardSupportRouteImport } from './routes/dashboard.support'
@@ -85,6 +93,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
@@ -98,6 +111,41 @@ const CreatorIndexRoute = CreatorIndexRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsSecurityRoute = SettingsSecurityRouteImport.update({
+  id: '/settings/security',
+  path: '/settings/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsOrganizationRoute = SettingsOrganizationRouteImport.update({
+  id: '/settings/organization',
+  path: '/settings/organization',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
+  id: '/settings/notifications',
+  path: '/settings/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsConnectedRoute = SettingsConnectedRouteImport.update({
+  id: '/settings/connected',
+  path: '/settings/connected',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsBillingRoute = SettingsBillingRouteImport.update({
+  id: '/settings/billing',
+  path: '/settings/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
+  id: '/settings/appearance',
+  path: '/settings/appearance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsApiKeysRoute = SettingsApiKeysRouteImport.update({
+  id: '/settings/api-keys',
+  path: '/settings/api-keys',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
@@ -324,9 +372,17 @@ export interface FileRoutesByFullPath {
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wishlist': typeof DashboardWishlistRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/settings/api-keys': typeof SettingsApiKeysRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/settings/connected': typeof SettingsConnectedRoute
+  '/settings/notifications': typeof SettingsNotificationsRoute
+  '/settings/organization': typeof SettingsOrganizationRoute
+  '/settings/security': typeof SettingsSecurityRoute
   '/admin/': typeof AdminIndexRoute
   '/creator/': typeof CreatorIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -371,9 +427,17 @@ export interface FileRoutesByTo {
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wishlist': typeof DashboardWishlistRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/settings/api-keys': typeof SettingsApiKeysRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/settings/connected': typeof SettingsConnectedRoute
+  '/settings/notifications': typeof SettingsNotificationsRoute
+  '/settings/organization': typeof SettingsOrganizationRoute
+  '/settings/security': typeof SettingsSecurityRoute
   '/admin': typeof AdminIndexRoute
   '/creator': typeof CreatorIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/settings': typeof SettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -419,9 +483,17 @@ export interface FileRoutesById {
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wishlist': typeof DashboardWishlistRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/settings/api-keys': typeof SettingsApiKeysRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/settings/connected': typeof SettingsConnectedRoute
+  '/settings/notifications': typeof SettingsNotificationsRoute
+  '/settings/organization': typeof SettingsOrganizationRoute
+  '/settings/security': typeof SettingsSecurityRoute
   '/admin/': typeof AdminIndexRoute
   '/creator/': typeof CreatorIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -468,9 +540,17 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/wishlist'
     | '/product/$slug'
+    | '/settings/api-keys'
+    | '/settings/appearance'
+    | '/settings/billing'
+    | '/settings/connected'
+    | '/settings/notifications'
+    | '/settings/organization'
+    | '/settings/security'
     | '/admin/'
     | '/creator/'
     | '/dashboard/'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -515,9 +595,17 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/wishlist'
     | '/product/$slug'
+    | '/settings/api-keys'
+    | '/settings/appearance'
+    | '/settings/billing'
+    | '/settings/connected'
+    | '/settings/notifications'
+    | '/settings/organization'
+    | '/settings/security'
     | '/admin'
     | '/creator'
     | '/dashboard'
+    | '/settings'
   id:
     | '__root__'
     | '/'
@@ -562,9 +650,17 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/wishlist'
     | '/product/$slug'
+    | '/settings/api-keys'
+    | '/settings/appearance'
+    | '/settings/billing'
+    | '/settings/connected'
+    | '/settings/notifications'
+    | '/settings/organization'
+    | '/settings/security'
     | '/admin/'
     | '/creator/'
     | '/dashboard/'
+    | '/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -610,9 +706,17 @@ export interface RootRouteChildren {
   DashboardSupportRoute: typeof DashboardSupportRoute
   DashboardWishlistRoute: typeof DashboardWishlistRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  SettingsApiKeysRoute: typeof SettingsApiKeysRoute
+  SettingsAppearanceRoute: typeof SettingsAppearanceRoute
+  SettingsBillingRoute: typeof SettingsBillingRoute
+  SettingsConnectedRoute: typeof SettingsConnectedRoute
+  SettingsNotificationsRoute: typeof SettingsNotificationsRoute
+  SettingsOrganizationRoute: typeof SettingsOrganizationRoute
+  SettingsSecurityRoute: typeof SettingsSecurityRoute
   AdminIndexRoute: typeof AdminIndexRoute
   CreatorIndexRoute: typeof CreatorIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -659,6 +763,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/dashboard'
@@ -678,6 +789,55 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/security': {
+      id: '/settings/security'
+      path: '/settings/security'
+      fullPath: '/settings/security'
+      preLoaderRoute: typeof SettingsSecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/organization': {
+      id: '/settings/organization'
+      path: '/settings/organization'
+      fullPath: '/settings/organization'
+      preLoaderRoute: typeof SettingsOrganizationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/notifications': {
+      id: '/settings/notifications'
+      path: '/settings/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof SettingsNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/connected': {
+      id: '/settings/connected'
+      path: '/settings/connected'
+      fullPath: '/settings/connected'
+      preLoaderRoute: typeof SettingsConnectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/billing': {
+      id: '/settings/billing'
+      path: '/settings/billing'
+      fullPath: '/settings/billing'
+      preLoaderRoute: typeof SettingsBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/appearance': {
+      id: '/settings/appearance'
+      path: '/settings/appearance'
+      fullPath: '/settings/appearance'
+      preLoaderRoute: typeof SettingsAppearanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/api-keys': {
+      id: '/settings/api-keys'
+      path: '/settings/api-keys'
+      fullPath: '/settings/api-keys'
+      preLoaderRoute: typeof SettingsApiKeysRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/product/$slug': {
@@ -978,9 +1138,17 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardSupportRoute: DashboardSupportRoute,
   DashboardWishlistRoute: DashboardWishlistRoute,
   ProductSlugRoute: ProductSlugRoute,
+  SettingsApiKeysRoute: SettingsApiKeysRoute,
+  SettingsAppearanceRoute: SettingsAppearanceRoute,
+  SettingsBillingRoute: SettingsBillingRoute,
+  SettingsConnectedRoute: SettingsConnectedRoute,
+  SettingsNotificationsRoute: SettingsNotificationsRoute,
+  SettingsOrganizationRoute: SettingsOrganizationRoute,
+  SettingsSecurityRoute: SettingsSecurityRoute,
   AdminIndexRoute: AdminIndexRoute,
   CreatorIndexRoute: CreatorIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
