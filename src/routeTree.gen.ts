@@ -17,6 +17,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as CreatorIndexRouteImport } from './routes/creator.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as DashboardWishlistRouteImport } from './routes/dashboard.wishlist'
 import { Route as DashboardSupportRouteImport } from './routes/dashboard.support'
@@ -40,6 +41,12 @@ import { Route as CreatorAnalyticsRouteImport } from './routes/creator.analytics
 import { Route as CreatorAchievementsRouteImport } from './routes/creator.achievements'
 import { Route as CreatorHandleRouteImport } from './routes/creator.$handle'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
+import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminCreatorsRouteImport } from './routes/admin.creators'
+import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 
 const PublishRoute = PublishRouteImport.update({
   id: '/publish',
@@ -79,6 +86,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
 const CreatorIndexRoute = CreatorIndexRouteImport.update({
   id: '/creator/',
   path: '/creator/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
@@ -196,6 +208,36 @@ const CategorySlugRoute = CategorySlugRouteImport.update({
   path: '/category/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRevenueRoute = AdminRevenueRouteImport.update({
+  id: '/admin/revenue',
+  path: '/admin/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/admin/products',
+  path: '/admin/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCreatorsRoute = AdminCreatorsRouteImport.update({
+  id: '/admin/creators',
+  path: '/admin/creators',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
+  id: '/admin/categories',
+  path: '/admin/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -204,6 +246,12 @@ export interface FileRoutesByFullPath {
   '/creators': typeof CreatorsRoute
   '/marketplace': typeof MarketplaceRoute
   '/publish': typeof PublishRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/users': typeof AdminUsersRoute
   '/category/$slug': typeof CategorySlugRoute
   '/creator/$handle': typeof CreatorHandleRoute
   '/creator/achievements': typeof CreatorAchievementsRoute
@@ -227,6 +275,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wishlist': typeof DashboardWishlistRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/creator/': typeof CreatorIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
@@ -237,6 +286,12 @@ export interface FileRoutesByTo {
   '/creators': typeof CreatorsRoute
   '/marketplace': typeof MarketplaceRoute
   '/publish': typeof PublishRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/users': typeof AdminUsersRoute
   '/category/$slug': typeof CategorySlugRoute
   '/creator/$handle': typeof CreatorHandleRoute
   '/creator/achievements': typeof CreatorAchievementsRoute
@@ -260,6 +315,7 @@ export interface FileRoutesByTo {
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wishlist': typeof DashboardWishlistRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/creator': typeof CreatorIndexRoute
   '/dashboard': typeof DashboardIndexRoute
 }
@@ -271,6 +327,12 @@ export interface FileRoutesById {
   '/creators': typeof CreatorsRoute
   '/marketplace': typeof MarketplaceRoute
   '/publish': typeof PublishRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/users': typeof AdminUsersRoute
   '/category/$slug': typeof CategorySlugRoute
   '/creator/$handle': typeof CreatorHandleRoute
   '/creator/achievements': typeof CreatorAchievementsRoute
@@ -294,6 +356,7 @@ export interface FileRoutesById {
   '/dashboard/support': typeof DashboardSupportRoute
   '/dashboard/wishlist': typeof DashboardWishlistRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/creator/': typeof CreatorIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
@@ -306,6 +369,12 @@ export interface FileRouteTypes {
     | '/creators'
     | '/marketplace'
     | '/publish'
+    | '/admin/categories'
+    | '/admin/creators'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/admin/revenue'
+    | '/admin/users'
     | '/category/$slug'
     | '/creator/$handle'
     | '/creator/achievements'
@@ -329,6 +398,7 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/wishlist'
     | '/product/$slug'
+    | '/admin/'
     | '/creator/'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
@@ -339,6 +409,12 @@ export interface FileRouteTypes {
     | '/creators'
     | '/marketplace'
     | '/publish'
+    | '/admin/categories'
+    | '/admin/creators'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/admin/revenue'
+    | '/admin/users'
     | '/category/$slug'
     | '/creator/$handle'
     | '/creator/achievements'
@@ -362,6 +438,7 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/wishlist'
     | '/product/$slug'
+    | '/admin'
     | '/creator'
     | '/dashboard'
   id:
@@ -372,6 +449,12 @@ export interface FileRouteTypes {
     | '/creators'
     | '/marketplace'
     | '/publish'
+    | '/admin/categories'
+    | '/admin/creators'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/admin/revenue'
+    | '/admin/users'
     | '/category/$slug'
     | '/creator/$handle'
     | '/creator/achievements'
@@ -395,6 +478,7 @@ export interface FileRouteTypes {
     | '/dashboard/support'
     | '/dashboard/wishlist'
     | '/product/$slug'
+    | '/admin/'
     | '/creator/'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
@@ -406,6 +490,12 @@ export interface RootRouteChildren {
   CreatorsRoute: typeof CreatorsRoute
   MarketplaceRoute: typeof MarketplaceRoute
   PublishRoute: typeof PublishRoute
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminCreatorsRoute: typeof AdminCreatorsRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+  AdminRevenueRoute: typeof AdminRevenueRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   CategorySlugRoute: typeof CategorySlugRoute
   CreatorHandleRoute: typeof CreatorHandleRoute
   CreatorAchievementsRoute: typeof CreatorAchievementsRoute
@@ -429,6 +519,7 @@ export interface RootRouteChildren {
   DashboardSupportRoute: typeof DashboardSupportRoute
   DashboardWishlistRoute: typeof DashboardWishlistRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   CreatorIndexRoute: typeof CreatorIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
@@ -489,6 +580,13 @@ declare module '@tanstack/react-router' {
       path: '/creator'
       fullPath: '/creator/'
       preLoaderRoute: typeof CreatorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/product/$slug': {
@@ -652,6 +750,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategorySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/revenue': {
+      id: '/admin/revenue'
+      path: '/admin/revenue'
+      fullPath: '/admin/revenue'
+      preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/admin/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/creators': {
+      id: '/admin/creators'
+      path: '/admin/creators'
+      fullPath: '/admin/creators'
+      preLoaderRoute: typeof AdminCreatorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/categories': {
+      id: '/admin/categories'
+      path: '/admin/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -662,6 +802,12 @@ const rootRouteChildren: RootRouteChildren = {
   CreatorsRoute: CreatorsRoute,
   MarketplaceRoute: MarketplaceRoute,
   PublishRoute: PublishRoute,
+  AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminCreatorsRoute: AdminCreatorsRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminProductsRoute: AdminProductsRoute,
+  AdminRevenueRoute: AdminRevenueRoute,
+  AdminUsersRoute: AdminUsersRoute,
   CategorySlugRoute: CategorySlugRoute,
   CreatorHandleRoute: CreatorHandleRoute,
   CreatorAchievementsRoute: CreatorAchievementsRoute,
@@ -685,6 +831,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardSupportRoute: DashboardSupportRoute,
   DashboardWishlistRoute: DashboardWishlistRoute,
   ProductSlugRoute: ProductSlugRoute,
+  AdminIndexRoute: AdminIndexRoute,
   CreatorIndexRoute: CreatorIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
