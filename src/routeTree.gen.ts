@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrendingRouteImport } from './routes/trending'
 import { Route as PublishRouteImport } from './routes/publish'
+import { Route as OrganizationsRouteImport } from './routes/organizations'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as LearningRouteImport } from './routes/learning'
 import { Route as CreatorsRouteImport } from './routes/creators'
+import { Route as CommunityRouteImport } from './routes/community'
+import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
@@ -51,21 +57,35 @@ import { Route as CreatorHandleRouteImport } from './routes/creator.$handle'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTicketsRouteImport } from './routes/admin.tickets'
+import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminOrganizationsRouteImport } from './routes/admin.organizations'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminModerationRouteImport } from './routes/admin.moderation'
 import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
 import { Route as AdminCreatorsRouteImport } from './routes/admin.creators'
+import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
+const TrendingRoute = TrendingRouteImport.update({
+  id: '/trending',
+  path: '/trending',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublishRoute = PublishRouteImport.update({
   id: '/publish',
   path: '/publish',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganizationsRoute = OrganizationsRouteImport.update({
+  id: '/organizations',
+  path: '/organizations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplaceRoute = MarketplaceRouteImport.update({
@@ -73,9 +93,24 @@ const MarketplaceRoute = MarketplaceRouteImport.update({
   path: '/marketplace',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LearningRoute = LearningRouteImport.update({
+  id: '/learning',
+  path: '/learning',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CreatorsRoute = CreatorsRouteImport.update({
   id: '/creators',
   path: '/creators',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityRoute = CommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsRoute = CollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategoriesRoute = CategoriesRouteImport.update({
@@ -86,6 +121,11 @@ const CategoriesRoute = CategoriesRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -273,9 +313,19 @@ const AdminTicketsRoute = AdminTicketsRouteImport.update({
   path: '/admin/tickets',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
+  id: '/admin/subscriptions',
+  path: '/admin/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/admin/settings',
   path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/admin/reviews',
+  path: '/admin/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
@@ -291,6 +341,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
 const AdminProductsRoute = AdminProductsRouteImport.update({
   id: '/admin/products',
   path: '/admin/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrganizationsRoute = AdminOrganizationsRouteImport.update({
+  id: '/admin/organizations',
+  path: '/admin/organizations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
@@ -313,6 +368,11 @@ const AdminCreatorsRoute = AdminCreatorsRouteImport.update({
   path: '/admin/creators',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCouponsRoute = AdminCouponsRouteImport.update({
+  id: '/admin/coupons',
+  path: '/admin/coupons',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   id: '/admin/categories',
   path: '/admin/categories',
@@ -331,22 +391,32 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/categories': typeof CategoriesRoute
+  '/collections': typeof CollectionsRoute
+  '/community': typeof CommunityRoute
   '/creators': typeof CreatorsRoute
+  '/learning': typeof LearningRoute
   '/marketplace': typeof MarketplaceRoute
+  '/organizations': typeof OrganizationsRoute
   '/publish': typeof PublishRoute
+  '/trending': typeof TrendingRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/creators': typeof AdminCreatorsRoute
   '/admin/flags': typeof AdminFlagsRoute
   '/admin/moderation': typeof AdminModerationRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/organizations': typeof AdminOrganizationsRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/tickets': typeof AdminTicketsRoute
   '/admin/users': typeof AdminUsersRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -386,22 +456,32 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/categories': typeof CategoriesRoute
+  '/collections': typeof CollectionsRoute
+  '/community': typeof CommunityRoute
   '/creators': typeof CreatorsRoute
+  '/learning': typeof LearningRoute
   '/marketplace': typeof MarketplaceRoute
+  '/organizations': typeof OrganizationsRoute
   '/publish': typeof PublishRoute
+  '/trending': typeof TrendingRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/creators': typeof AdminCreatorsRoute
   '/admin/flags': typeof AdminFlagsRoute
   '/admin/moderation': typeof AdminModerationRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/organizations': typeof AdminOrganizationsRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/tickets': typeof AdminTicketsRoute
   '/admin/users': typeof AdminUsersRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -442,22 +522,32 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/categories': typeof CategoriesRoute
+  '/collections': typeof CollectionsRoute
+  '/community': typeof CommunityRoute
   '/creators': typeof CreatorsRoute
+  '/learning': typeof LearningRoute
   '/marketplace': typeof MarketplaceRoute
+  '/organizations': typeof OrganizationsRoute
   '/publish': typeof PublishRoute
+  '/trending': typeof TrendingRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/creators': typeof AdminCreatorsRoute
   '/admin/flags': typeof AdminFlagsRoute
   '/admin/moderation': typeof AdminModerationRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/organizations': typeof AdminOrganizationsRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/tickets': typeof AdminTicketsRoute
   '/admin/users': typeof AdminUsersRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -499,22 +589,32 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/auth'
     | '/categories'
+    | '/collections'
+    | '/community'
     | '/creators'
+    | '/learning'
     | '/marketplace'
+    | '/organizations'
     | '/publish'
+    | '/trending'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/categories'
+    | '/admin/coupons'
     | '/admin/creators'
     | '/admin/flags'
     | '/admin/moderation'
     | '/admin/orders'
+    | '/admin/organizations'
     | '/admin/products'
     | '/admin/reports'
     | '/admin/revenue'
+    | '/admin/reviews'
     | '/admin/settings'
+    | '/admin/subscriptions'
     | '/admin/tickets'
     | '/admin/users'
     | '/category/$slug'
@@ -554,22 +654,32 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/auth'
     | '/categories'
+    | '/collections'
+    | '/community'
     | '/creators'
+    | '/learning'
     | '/marketplace'
+    | '/organizations'
     | '/publish'
+    | '/trending'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/categories'
+    | '/admin/coupons'
     | '/admin/creators'
     | '/admin/flags'
     | '/admin/moderation'
     | '/admin/orders'
+    | '/admin/organizations'
     | '/admin/products'
     | '/admin/reports'
     | '/admin/revenue'
+    | '/admin/reviews'
     | '/admin/settings'
+    | '/admin/subscriptions'
     | '/admin/tickets'
     | '/admin/users'
     | '/category/$slug'
@@ -609,22 +719,32 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/auth'
     | '/categories'
+    | '/collections'
+    | '/community'
     | '/creators'
+    | '/learning'
     | '/marketplace'
+    | '/organizations'
     | '/publish'
+    | '/trending'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/categories'
+    | '/admin/coupons'
     | '/admin/creators'
     | '/admin/flags'
     | '/admin/moderation'
     | '/admin/orders'
+    | '/admin/organizations'
     | '/admin/products'
     | '/admin/reports'
     | '/admin/revenue'
+    | '/admin/reviews'
     | '/admin/settings'
+    | '/admin/subscriptions'
     | '/admin/tickets'
     | '/admin/users'
     | '/category/$slug'
@@ -665,22 +785,32 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   CategoriesRoute: typeof CategoriesRoute
+  CollectionsRoute: typeof CollectionsRoute
+  CommunityRoute: typeof CommunityRoute
   CreatorsRoute: typeof CreatorsRoute
+  LearningRoute: typeof LearningRoute
   MarketplaceRoute: typeof MarketplaceRoute
+  OrganizationsRoute: typeof OrganizationsRoute
   PublishRoute: typeof PublishRoute
+  TrendingRoute: typeof TrendingRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCreatorsRoute: typeof AdminCreatorsRoute
   AdminFlagsRoute: typeof AdminFlagsRoute
   AdminModerationRoute: typeof AdminModerationRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminOrganizationsRoute: typeof AdminOrganizationsRoute
   AdminProductsRoute: typeof AdminProductsRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminTicketsRoute: typeof AdminTicketsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   CategorySlugRoute: typeof CategorySlugRoute
@@ -721,11 +851,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trending': {
+      id: '/trending'
+      path: '/trending'
+      fullPath: '/trending'
+      preLoaderRoute: typeof TrendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/publish': {
       id: '/publish'
       path: '/publish'
       fullPath: '/publish'
       preLoaderRoute: typeof PublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/organizations': {
+      id: '/organizations'
+      path: '/organizations'
+      fullPath: '/organizations'
+      preLoaderRoute: typeof OrganizationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace': {
@@ -735,11 +879,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplaceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/learning': {
+      id: '/learning'
+      path: '/learning'
+      fullPath: '/learning'
+      preLoaderRoute: typeof LearningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/creators': {
       id: '/creators'
       path: '/creators'
       fullPath: '/creators'
       preLoaderRoute: typeof CreatorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community': {
+      id: '/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof CommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/categories': {
@@ -754,6 +919,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1015,11 +1187,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTicketsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/subscriptions': {
+      id: '/admin/subscriptions'
+      path: '/admin/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AdminSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/admin/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/revenue': {
@@ -1041,6 +1227,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/products'
       fullPath: '/admin/products'
       preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/organizations': {
+      id: '/admin/organizations'
+      path: '/admin/organizations'
+      fullPath: '/admin/organizations'
+      preLoaderRoute: typeof AdminOrganizationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/orders': {
@@ -1071,6 +1264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCreatorsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/coupons': {
+      id: '/admin/coupons'
+      path: '/admin/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/categories': {
       id: '/admin/categories'
       path: '/admin/categories'
@@ -1097,22 +1297,32 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   CategoriesRoute: CategoriesRoute,
+  CollectionsRoute: CollectionsRoute,
+  CommunityRoute: CommunityRoute,
   CreatorsRoute: CreatorsRoute,
+  LearningRoute: LearningRoute,
   MarketplaceRoute: MarketplaceRoute,
+  OrganizationsRoute: OrganizationsRoute,
   PublishRoute: PublishRoute,
+  TrendingRoute: TrendingRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminCouponsRoute: AdminCouponsRoute,
   AdminCreatorsRoute: AdminCreatorsRoute,
   AdminFlagsRoute: AdminFlagsRoute,
   AdminModerationRoute: AdminModerationRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminOrganizationsRoute: AdminOrganizationsRoute,
   AdminProductsRoute: AdminProductsRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminRevenueRoute: AdminRevenueRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminTicketsRoute: AdminTicketsRoute,
   AdminUsersRoute: AdminUsersRoute,
   CategorySlugRoute: CategorySlugRoute,
