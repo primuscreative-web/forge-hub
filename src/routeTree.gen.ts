@@ -9,38 +9,925 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrendingRouteImport } from './routes/trending'
+import { Route as PublishRouteImport } from './routes/publish'
+import { Route as OrganizationsRouteImport } from './routes/organizations'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as LearningRouteImport } from './routes/learning'
+import { Route as CreatorsRouteImport } from './routes/creators'
+import { Route as CommunityRouteImport } from './routes/community'
+import { Route as CollectionsRouteImport } from './routes/collections'
+import { Route as CategoriesRouteImport } from './routes/categories'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings.index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as CreatorIndexRouteImport } from './routes/creator.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as SettingsSecurityRouteImport } from './routes/settings.security'
+import { Route as SettingsOrganizationRouteImport } from './routes/settings.organization'
+import { Route as SettingsNotificationsRouteImport } from './routes/settings.notifications'
+import { Route as SettingsConnectedRouteImport } from './routes/settings.connected'
+import { Route as SettingsBillingRouteImport } from './routes/settings.billing'
+import { Route as SettingsAppearanceRouteImport } from './routes/settings.appearance'
+import { Route as SettingsApiKeysRouteImport } from './routes/settings.api-keys'
+import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as DashboardWishlistRouteImport } from './routes/dashboard.wishlist'
+import { Route as DashboardSupportRouteImport } from './routes/dashboard.support'
+import { Route as DashboardSubscriptionsRouteImport } from './routes/dashboard.subscriptions'
+import { Route as DashboardPurchasesRouteImport } from './routes/dashboard.purchases'
+import { Route as DashboardNotificationsRouteImport } from './routes/dashboard.notifications'
+import { Route as DashboardMessagesRouteImport } from './routes/dashboard.messages'
+import { Route as DashboardLicensesRouteImport } from './routes/dashboard.licenses'
+import { Route as DashboardFollowingRouteImport } from './routes/dashboard.following'
+import { Route as DashboardCollectionsRouteImport } from './routes/dashboard.collections'
+import { Route as DashboardBookmarksRouteImport } from './routes/dashboard.bookmarks'
+import { Route as CreatorWithdrawalsRouteImport } from './routes/creator.withdrawals'
+import { Route as CreatorSubscriptionsRouteImport } from './routes/creator.subscriptions'
+import { Route as CreatorReviewsRouteImport } from './routes/creator.reviews'
+import { Route as CreatorRevenueRouteImport } from './routes/creator.revenue'
+import { Route as CreatorProductsRouteImport } from './routes/creator.products'
+import { Route as CreatorMessagesRouteImport } from './routes/creator.messages'
+import { Route as CreatorLicensesRouteImport } from './routes/creator.licenses'
+import { Route as CreatorCustomersRouteImport } from './routes/creator.customers'
+import { Route as CreatorAnalyticsRouteImport } from './routes/creator.analytics'
+import { Route as CreatorAchievementsRouteImport } from './routes/creator.achievements'
+import { Route as CreatorHandleRouteImport } from './routes/creator.$handle'
+import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminTicketsRouteImport } from './routes/admin.tickets'
+import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
+import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminOrganizationsRouteImport } from './routes/admin.organizations'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminModerationRouteImport } from './routes/admin.moderation'
+import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
+import { Route as AdminCreatorsRouteImport } from './routes/admin.creators'
+import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
+import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
+const TrendingRoute = TrendingRouteImport.update({
+  id: '/trending',
+  path: '/trending',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublishRoute = PublishRouteImport.update({
+  id: '/publish',
+  path: '/publish',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganizationsRoute = OrganizationsRouteImport.update({
+  id: '/organizations',
+  path: '/organizations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearningRoute = LearningRouteImport.update({
+  id: '/learning',
+  path: '/learning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorsRoute = CreatorsRouteImport.update({
+  id: '/creators',
+  path: '/creators',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityRoute = CommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsRoute = CollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesRoute = CategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorIndexRoute = CreatorIndexRouteImport.update({
+  id: '/creator/',
+  path: '/creator/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsSecurityRoute = SettingsSecurityRouteImport.update({
+  id: '/settings/security',
+  path: '/settings/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsOrganizationRoute = SettingsOrganizationRouteImport.update({
+  id: '/settings/organization',
+  path: '/settings/organization',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
+  id: '/settings/notifications',
+  path: '/settings/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsConnectedRoute = SettingsConnectedRouteImport.update({
+  id: '/settings/connected',
+  path: '/settings/connected',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsBillingRoute = SettingsBillingRouteImport.update({
+  id: '/settings/billing',
+  path: '/settings/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
+  id: '/settings/appearance',
+  path: '/settings/appearance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsApiKeysRoute = SettingsApiKeysRouteImport.update({
+  id: '/settings/api-keys',
+  path: '/settings/api-keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductSlugRoute = ProductSlugRouteImport.update({
+  id: '/product/$slug',
+  path: '/product/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardWishlistRoute = DashboardWishlistRouteImport.update({
+  id: '/dashboard/wishlist',
+  path: '/dashboard/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSupportRoute = DashboardSupportRouteImport.update({
+  id: '/dashboard/support',
+  path: '/dashboard/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSubscriptionsRoute = DashboardSubscriptionsRouteImport.update({
+  id: '/dashboard/subscriptions',
+  path: '/dashboard/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardPurchasesRoute = DashboardPurchasesRouteImport.update({
+  id: '/dashboard/purchases',
+  path: '/dashboard/purchases',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardNotificationsRoute = DashboardNotificationsRouteImport.update({
+  id: '/dashboard/notifications',
+  path: '/dashboard/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
+  id: '/dashboard/messages',
+  path: '/dashboard/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardLicensesRoute = DashboardLicensesRouteImport.update({
+  id: '/dashboard/licenses',
+  path: '/dashboard/licenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardFollowingRoute = DashboardFollowingRouteImport.update({
+  id: '/dashboard/following',
+  path: '/dashboard/following',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardCollectionsRoute = DashboardCollectionsRouteImport.update({
+  id: '/dashboard/collections',
+  path: '/dashboard/collections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardBookmarksRoute = DashboardBookmarksRouteImport.update({
+  id: '/dashboard/bookmarks',
+  path: '/dashboard/bookmarks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorWithdrawalsRoute = CreatorWithdrawalsRouteImport.update({
+  id: '/creator/withdrawals',
+  path: '/creator/withdrawals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorSubscriptionsRoute = CreatorSubscriptionsRouteImport.update({
+  id: '/creator/subscriptions',
+  path: '/creator/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorReviewsRoute = CreatorReviewsRouteImport.update({
+  id: '/creator/reviews',
+  path: '/creator/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorRevenueRoute = CreatorRevenueRouteImport.update({
+  id: '/creator/revenue',
+  path: '/creator/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorProductsRoute = CreatorProductsRouteImport.update({
+  id: '/creator/products',
+  path: '/creator/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorMessagesRoute = CreatorMessagesRouteImport.update({
+  id: '/creator/messages',
+  path: '/creator/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorLicensesRoute = CreatorLicensesRouteImport.update({
+  id: '/creator/licenses',
+  path: '/creator/licenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorCustomersRoute = CreatorCustomersRouteImport.update({
+  id: '/creator/customers',
+  path: '/creator/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorAnalyticsRoute = CreatorAnalyticsRouteImport.update({
+  id: '/creator/analytics',
+  path: '/creator/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorAchievementsRoute = CreatorAchievementsRouteImport.update({
+  id: '/creator/achievements',
+  path: '/creator/achievements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorHandleRoute = CreatorHandleRouteImport.update({
+  id: '/creator/$handle',
+  path: '/creator/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategorySlugRoute = CategorySlugRouteImport.update({
+  id: '/category/$slug',
+  path: '/category/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTicketsRoute = AdminTicketsRouteImport.update({
+  id: '/admin/tickets',
+  path: '/admin/tickets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
+  id: '/admin/subscriptions',
+  path: '/admin/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/admin/reviews',
+  path: '/admin/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRevenueRoute = AdminRevenueRouteImport.update({
+  id: '/admin/revenue',
+  path: '/admin/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/admin/reports',
+  path: '/admin/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/admin/products',
+  path: '/admin/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrganizationsRoute = AdminOrganizationsRouteImport.update({
+  id: '/admin/organizations',
+  path: '/admin/organizations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminModerationRoute = AdminModerationRouteImport.update({
+  id: '/admin/moderation',
+  path: '/admin/moderation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminFlagsRoute = AdminFlagsRouteImport.update({
+  id: '/admin/flags',
+  path: '/admin/flags',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCreatorsRoute = AdminCreatorsRouteImport.update({
+  id: '/admin/creators',
+  path: '/admin/creators',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCouponsRoute = AdminCouponsRouteImport.update({
+  id: '/admin/coupons',
+  path: '/admin/coupons',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
+  id: '/admin/categories',
+  path: '/admin/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/admin/analytics',
+  path: '/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
+  '/categories': typeof CategoriesRoute
+  '/collections': typeof CollectionsRoute
+  '/community': typeof CommunityRoute
+  '/creators': typeof CreatorsRoute
+  '/learning': typeof LearningRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/organizations': typeof OrganizationsRoute
+  '/publish': typeof PublishRoute
+  '/trending': typeof TrendingRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/flags': typeof AdminFlagsRoute
+  '/admin/moderation': typeof AdminModerationRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/organizations': typeof AdminOrganizationsRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/tickets': typeof AdminTicketsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/category/$slug': typeof CategorySlugRoute
+  '/creator/$handle': typeof CreatorHandleRoute
+  '/creator/achievements': typeof CreatorAchievementsRoute
+  '/creator/analytics': typeof CreatorAnalyticsRoute
+  '/creator/customers': typeof CreatorCustomersRoute
+  '/creator/licenses': typeof CreatorLicensesRoute
+  '/creator/messages': typeof CreatorMessagesRoute
+  '/creator/products': typeof CreatorProductsRoute
+  '/creator/revenue': typeof CreatorRevenueRoute
+  '/creator/reviews': typeof CreatorReviewsRoute
+  '/creator/subscriptions': typeof CreatorSubscriptionsRoute
+  '/creator/withdrawals': typeof CreatorWithdrawalsRoute
+  '/dashboard/bookmarks': typeof DashboardBookmarksRoute
+  '/dashboard/collections': typeof DashboardCollectionsRoute
+  '/dashboard/following': typeof DashboardFollowingRoute
+  '/dashboard/licenses': typeof DashboardLicensesRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/notifications': typeof DashboardNotificationsRoute
+  '/dashboard/purchases': typeof DashboardPurchasesRoute
+  '/dashboard/subscriptions': typeof DashboardSubscriptionsRoute
+  '/dashboard/support': typeof DashboardSupportRoute
+  '/dashboard/wishlist': typeof DashboardWishlistRoute
+  '/product/$slug': typeof ProductSlugRoute
+  '/settings/api-keys': typeof SettingsApiKeysRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/settings/connected': typeof SettingsConnectedRoute
+  '/settings/notifications': typeof SettingsNotificationsRoute
+  '/settings/organization': typeof SettingsOrganizationRoute
+  '/settings/security': typeof SettingsSecurityRoute
+  '/admin/': typeof AdminIndexRoute
+  '/creator/': typeof CreatorIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
+  '/categories': typeof CategoriesRoute
+  '/collections': typeof CollectionsRoute
+  '/community': typeof CommunityRoute
+  '/creators': typeof CreatorsRoute
+  '/learning': typeof LearningRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/organizations': typeof OrganizationsRoute
+  '/publish': typeof PublishRoute
+  '/trending': typeof TrendingRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/flags': typeof AdminFlagsRoute
+  '/admin/moderation': typeof AdminModerationRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/organizations': typeof AdminOrganizationsRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/tickets': typeof AdminTicketsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/category/$slug': typeof CategorySlugRoute
+  '/creator/$handle': typeof CreatorHandleRoute
+  '/creator/achievements': typeof CreatorAchievementsRoute
+  '/creator/analytics': typeof CreatorAnalyticsRoute
+  '/creator/customers': typeof CreatorCustomersRoute
+  '/creator/licenses': typeof CreatorLicensesRoute
+  '/creator/messages': typeof CreatorMessagesRoute
+  '/creator/products': typeof CreatorProductsRoute
+  '/creator/revenue': typeof CreatorRevenueRoute
+  '/creator/reviews': typeof CreatorReviewsRoute
+  '/creator/subscriptions': typeof CreatorSubscriptionsRoute
+  '/creator/withdrawals': typeof CreatorWithdrawalsRoute
+  '/dashboard/bookmarks': typeof DashboardBookmarksRoute
+  '/dashboard/collections': typeof DashboardCollectionsRoute
+  '/dashboard/following': typeof DashboardFollowingRoute
+  '/dashboard/licenses': typeof DashboardLicensesRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/notifications': typeof DashboardNotificationsRoute
+  '/dashboard/purchases': typeof DashboardPurchasesRoute
+  '/dashboard/subscriptions': typeof DashboardSubscriptionsRoute
+  '/dashboard/support': typeof DashboardSupportRoute
+  '/dashboard/wishlist': typeof DashboardWishlistRoute
+  '/product/$slug': typeof ProductSlugRoute
+  '/settings/api-keys': typeof SettingsApiKeysRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/settings/connected': typeof SettingsConnectedRoute
+  '/settings/notifications': typeof SettingsNotificationsRoute
+  '/settings/organization': typeof SettingsOrganizationRoute
+  '/settings/security': typeof SettingsSecurityRoute
+  '/admin': typeof AdminIndexRoute
+  '/creator': typeof CreatorIndexRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/settings': typeof SettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
+  '/categories': typeof CategoriesRoute
+  '/collections': typeof CollectionsRoute
+  '/community': typeof CommunityRoute
+  '/creators': typeof CreatorsRoute
+  '/learning': typeof LearningRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/organizations': typeof OrganizationsRoute
+  '/publish': typeof PublishRoute
+  '/trending': typeof TrendingRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/flags': typeof AdminFlagsRoute
+  '/admin/moderation': typeof AdminModerationRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/organizations': typeof AdminOrganizationsRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/tickets': typeof AdminTicketsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/category/$slug': typeof CategorySlugRoute
+  '/creator/$handle': typeof CreatorHandleRoute
+  '/creator/achievements': typeof CreatorAchievementsRoute
+  '/creator/analytics': typeof CreatorAnalyticsRoute
+  '/creator/customers': typeof CreatorCustomersRoute
+  '/creator/licenses': typeof CreatorLicensesRoute
+  '/creator/messages': typeof CreatorMessagesRoute
+  '/creator/products': typeof CreatorProductsRoute
+  '/creator/revenue': typeof CreatorRevenueRoute
+  '/creator/reviews': typeof CreatorReviewsRoute
+  '/creator/subscriptions': typeof CreatorSubscriptionsRoute
+  '/creator/withdrawals': typeof CreatorWithdrawalsRoute
+  '/dashboard/bookmarks': typeof DashboardBookmarksRoute
+  '/dashboard/collections': typeof DashboardCollectionsRoute
+  '/dashboard/following': typeof DashboardFollowingRoute
+  '/dashboard/licenses': typeof DashboardLicensesRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/notifications': typeof DashboardNotificationsRoute
+  '/dashboard/purchases': typeof DashboardPurchasesRoute
+  '/dashboard/subscriptions': typeof DashboardSubscriptionsRoute
+  '/dashboard/support': typeof DashboardSupportRoute
+  '/dashboard/wishlist': typeof DashboardWishlistRoute
+  '/product/$slug': typeof ProductSlugRoute
+  '/settings/api-keys': typeof SettingsApiKeysRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/billing': typeof SettingsBillingRoute
+  '/settings/connected': typeof SettingsConnectedRoute
+  '/settings/notifications': typeof SettingsNotificationsRoute
+  '/settings/organization': typeof SettingsOrganizationRoute
+  '/settings/security': typeof SettingsSecurityRoute
+  '/admin/': typeof AdminIndexRoute
+  '/creator/': typeof CreatorIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/auth'
+    | '/categories'
+    | '/collections'
+    | '/community'
+    | '/creators'
+    | '/learning'
+    | '/marketplace'
+    | '/organizations'
+    | '/publish'
+    | '/trending'
+    | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/categories'
+    | '/admin/coupons'
+    | '/admin/creators'
+    | '/admin/flags'
+    | '/admin/moderation'
+    | '/admin/orders'
+    | '/admin/organizations'
+    | '/admin/products'
+    | '/admin/reports'
+    | '/admin/revenue'
+    | '/admin/reviews'
+    | '/admin/settings'
+    | '/admin/subscriptions'
+    | '/admin/tickets'
+    | '/admin/users'
+    | '/category/$slug'
+    | '/creator/$handle'
+    | '/creator/achievements'
+    | '/creator/analytics'
+    | '/creator/customers'
+    | '/creator/licenses'
+    | '/creator/messages'
+    | '/creator/products'
+    | '/creator/revenue'
+    | '/creator/reviews'
+    | '/creator/subscriptions'
+    | '/creator/withdrawals'
+    | '/dashboard/bookmarks'
+    | '/dashboard/collections'
+    | '/dashboard/following'
+    | '/dashboard/licenses'
+    | '/dashboard/messages'
+    | '/dashboard/notifications'
+    | '/dashboard/purchases'
+    | '/dashboard/subscriptions'
+    | '/dashboard/support'
+    | '/dashboard/wishlist'
+    | '/product/$slug'
+    | '/settings/api-keys'
+    | '/settings/appearance'
+    | '/settings/billing'
+    | '/settings/connected'
+    | '/settings/notifications'
+    | '/settings/organization'
+    | '/settings/security'
+    | '/admin/'
+    | '/creator/'
+    | '/dashboard/'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/about'
+    | '/auth'
+    | '/categories'
+    | '/collections'
+    | '/community'
+    | '/creators'
+    | '/learning'
+    | '/marketplace'
+    | '/organizations'
+    | '/publish'
+    | '/trending'
+    | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/categories'
+    | '/admin/coupons'
+    | '/admin/creators'
+    | '/admin/flags'
+    | '/admin/moderation'
+    | '/admin/orders'
+    | '/admin/organizations'
+    | '/admin/products'
+    | '/admin/reports'
+    | '/admin/revenue'
+    | '/admin/reviews'
+    | '/admin/settings'
+    | '/admin/subscriptions'
+    | '/admin/tickets'
+    | '/admin/users'
+    | '/category/$slug'
+    | '/creator/$handle'
+    | '/creator/achievements'
+    | '/creator/analytics'
+    | '/creator/customers'
+    | '/creator/licenses'
+    | '/creator/messages'
+    | '/creator/products'
+    | '/creator/revenue'
+    | '/creator/reviews'
+    | '/creator/subscriptions'
+    | '/creator/withdrawals'
+    | '/dashboard/bookmarks'
+    | '/dashboard/collections'
+    | '/dashboard/following'
+    | '/dashboard/licenses'
+    | '/dashboard/messages'
+    | '/dashboard/notifications'
+    | '/dashboard/purchases'
+    | '/dashboard/subscriptions'
+    | '/dashboard/support'
+    | '/dashboard/wishlist'
+    | '/product/$slug'
+    | '/settings/api-keys'
+    | '/settings/appearance'
+    | '/settings/billing'
+    | '/settings/connected'
+    | '/settings/notifications'
+    | '/settings/organization'
+    | '/settings/security'
+    | '/admin'
+    | '/creator'
+    | '/dashboard'
+    | '/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/auth'
+    | '/categories'
+    | '/collections'
+    | '/community'
+    | '/creators'
+    | '/learning'
+    | '/marketplace'
+    | '/organizations'
+    | '/publish'
+    | '/trending'
+    | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/categories'
+    | '/admin/coupons'
+    | '/admin/creators'
+    | '/admin/flags'
+    | '/admin/moderation'
+    | '/admin/orders'
+    | '/admin/organizations'
+    | '/admin/products'
+    | '/admin/reports'
+    | '/admin/revenue'
+    | '/admin/reviews'
+    | '/admin/settings'
+    | '/admin/subscriptions'
+    | '/admin/tickets'
+    | '/admin/users'
+    | '/category/$slug'
+    | '/creator/$handle'
+    | '/creator/achievements'
+    | '/creator/analytics'
+    | '/creator/customers'
+    | '/creator/licenses'
+    | '/creator/messages'
+    | '/creator/products'
+    | '/creator/revenue'
+    | '/creator/reviews'
+    | '/creator/subscriptions'
+    | '/creator/withdrawals'
+    | '/dashboard/bookmarks'
+    | '/dashboard/collections'
+    | '/dashboard/following'
+    | '/dashboard/licenses'
+    | '/dashboard/messages'
+    | '/dashboard/notifications'
+    | '/dashboard/purchases'
+    | '/dashboard/subscriptions'
+    | '/dashboard/support'
+    | '/dashboard/wishlist'
+    | '/product/$slug'
+    | '/settings/api-keys'
+    | '/settings/appearance'
+    | '/settings/billing'
+    | '/settings/connected'
+    | '/settings/notifications'
+    | '/settings/organization'
+    | '/settings/security'
+    | '/admin/'
+    | '/creator/'
+    | '/dashboard/'
+    | '/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  AuthRoute: typeof AuthRoute
+  CategoriesRoute: typeof CategoriesRoute
+  CollectionsRoute: typeof CollectionsRoute
+  CommunityRoute: typeof CommunityRoute
+  CreatorsRoute: typeof CreatorsRoute
+  LearningRoute: typeof LearningRoute
+  MarketplaceRoute: typeof MarketplaceRoute
+  OrganizationsRoute: typeof OrganizationsRoute
+  PublishRoute: typeof PublishRoute
+  TrendingRoute: typeof TrendingRoute
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminCouponsRoute: typeof AdminCouponsRoute
+  AdminCreatorsRoute: typeof AdminCreatorsRoute
+  AdminFlagsRoute: typeof AdminFlagsRoute
+  AdminModerationRoute: typeof AdminModerationRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminOrganizationsRoute: typeof AdminOrganizationsRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminRevenueRoute: typeof AdminRevenueRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminTicketsRoute: typeof AdminTicketsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  CategorySlugRoute: typeof CategorySlugRoute
+  CreatorHandleRoute: typeof CreatorHandleRoute
+  CreatorAchievementsRoute: typeof CreatorAchievementsRoute
+  CreatorAnalyticsRoute: typeof CreatorAnalyticsRoute
+  CreatorCustomersRoute: typeof CreatorCustomersRoute
+  CreatorLicensesRoute: typeof CreatorLicensesRoute
+  CreatorMessagesRoute: typeof CreatorMessagesRoute
+  CreatorProductsRoute: typeof CreatorProductsRoute
+  CreatorRevenueRoute: typeof CreatorRevenueRoute
+  CreatorReviewsRoute: typeof CreatorReviewsRoute
+  CreatorSubscriptionsRoute: typeof CreatorSubscriptionsRoute
+  CreatorWithdrawalsRoute: typeof CreatorWithdrawalsRoute
+  DashboardBookmarksRoute: typeof DashboardBookmarksRoute
+  DashboardCollectionsRoute: typeof DashboardCollectionsRoute
+  DashboardFollowingRoute: typeof DashboardFollowingRoute
+  DashboardLicensesRoute: typeof DashboardLicensesRoute
+  DashboardMessagesRoute: typeof DashboardMessagesRoute
+  DashboardNotificationsRoute: typeof DashboardNotificationsRoute
+  DashboardPurchasesRoute: typeof DashboardPurchasesRoute
+  DashboardSubscriptionsRoute: typeof DashboardSubscriptionsRoute
+  DashboardSupportRoute: typeof DashboardSupportRoute
+  DashboardWishlistRoute: typeof DashboardWishlistRoute
+  ProductSlugRoute: typeof ProductSlugRoute
+  SettingsApiKeysRoute: typeof SettingsApiKeysRoute
+  SettingsAppearanceRoute: typeof SettingsAppearanceRoute
+  SettingsBillingRoute: typeof SettingsBillingRoute
+  SettingsConnectedRoute: typeof SettingsConnectedRoute
+  SettingsNotificationsRoute: typeof SettingsNotificationsRoute
+  SettingsOrganizationRoute: typeof SettingsOrganizationRoute
+  SettingsSecurityRoute: typeof SettingsSecurityRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  CreatorIndexRoute: typeof CreatorIndexRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trending': {
+      id: '/trending'
+      path: '/trending'
+      fullPath: '/trending'
+      preLoaderRoute: typeof TrendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/publish': {
+      id: '/publish'
+      path: '/publish'
+      fullPath: '/publish'
+      preLoaderRoute: typeof PublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/organizations': {
+      id: '/organizations'
+      path: '/organizations'
+      fullPath: '/organizations'
+      preLoaderRoute: typeof OrganizationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learning': {
+      id: '/learning'
+      path: '/learning'
+      fullPath: '/learning'
+      preLoaderRoute: typeof LearningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creators': {
+      id: '/creators'
+      path: '/creators'
+      fullPath: '/creators'
+      preLoaderRoute: typeof CreatorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community': {
+      id: '/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof CommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories': {
+      id: '/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof CategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +935,431 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/': {
+      id: '/creator/'
+      path: '/creator'
+      fullPath: '/creator/'
+      preLoaderRoute: typeof CreatorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/security': {
+      id: '/settings/security'
+      path: '/settings/security'
+      fullPath: '/settings/security'
+      preLoaderRoute: typeof SettingsSecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/organization': {
+      id: '/settings/organization'
+      path: '/settings/organization'
+      fullPath: '/settings/organization'
+      preLoaderRoute: typeof SettingsOrganizationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/notifications': {
+      id: '/settings/notifications'
+      path: '/settings/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof SettingsNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/connected': {
+      id: '/settings/connected'
+      path: '/settings/connected'
+      fullPath: '/settings/connected'
+      preLoaderRoute: typeof SettingsConnectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/billing': {
+      id: '/settings/billing'
+      path: '/settings/billing'
+      fullPath: '/settings/billing'
+      preLoaderRoute: typeof SettingsBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/appearance': {
+      id: '/settings/appearance'
+      path: '/settings/appearance'
+      fullPath: '/settings/appearance'
+      preLoaderRoute: typeof SettingsAppearanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/api-keys': {
+      id: '/settings/api-keys'
+      path: '/settings/api-keys'
+      fullPath: '/settings/api-keys'
+      preLoaderRoute: typeof SettingsApiKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/product/$slug': {
+      id: '/product/$slug'
+      path: '/product/$slug'
+      fullPath: '/product/$slug'
+      preLoaderRoute: typeof ProductSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/wishlist': {
+      id: '/dashboard/wishlist'
+      path: '/dashboard/wishlist'
+      fullPath: '/dashboard/wishlist'
+      preLoaderRoute: typeof DashboardWishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/support': {
+      id: '/dashboard/support'
+      path: '/dashboard/support'
+      fullPath: '/dashboard/support'
+      preLoaderRoute: typeof DashboardSupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/subscriptions': {
+      id: '/dashboard/subscriptions'
+      path: '/dashboard/subscriptions'
+      fullPath: '/dashboard/subscriptions'
+      preLoaderRoute: typeof DashboardSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/purchases': {
+      id: '/dashboard/purchases'
+      path: '/dashboard/purchases'
+      fullPath: '/dashboard/purchases'
+      preLoaderRoute: typeof DashboardPurchasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/notifications': {
+      id: '/dashboard/notifications'
+      path: '/dashboard/notifications'
+      fullPath: '/dashboard/notifications'
+      preLoaderRoute: typeof DashboardNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/messages': {
+      id: '/dashboard/messages'
+      path: '/dashboard/messages'
+      fullPath: '/dashboard/messages'
+      preLoaderRoute: typeof DashboardMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/licenses': {
+      id: '/dashboard/licenses'
+      path: '/dashboard/licenses'
+      fullPath: '/dashboard/licenses'
+      preLoaderRoute: typeof DashboardLicensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/following': {
+      id: '/dashboard/following'
+      path: '/dashboard/following'
+      fullPath: '/dashboard/following'
+      preLoaderRoute: typeof DashboardFollowingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/collections': {
+      id: '/dashboard/collections'
+      path: '/dashboard/collections'
+      fullPath: '/dashboard/collections'
+      preLoaderRoute: typeof DashboardCollectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/bookmarks': {
+      id: '/dashboard/bookmarks'
+      path: '/dashboard/bookmarks'
+      fullPath: '/dashboard/bookmarks'
+      preLoaderRoute: typeof DashboardBookmarksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/withdrawals': {
+      id: '/creator/withdrawals'
+      path: '/creator/withdrawals'
+      fullPath: '/creator/withdrawals'
+      preLoaderRoute: typeof CreatorWithdrawalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/subscriptions': {
+      id: '/creator/subscriptions'
+      path: '/creator/subscriptions'
+      fullPath: '/creator/subscriptions'
+      preLoaderRoute: typeof CreatorSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/reviews': {
+      id: '/creator/reviews'
+      path: '/creator/reviews'
+      fullPath: '/creator/reviews'
+      preLoaderRoute: typeof CreatorReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/revenue': {
+      id: '/creator/revenue'
+      path: '/creator/revenue'
+      fullPath: '/creator/revenue'
+      preLoaderRoute: typeof CreatorRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/products': {
+      id: '/creator/products'
+      path: '/creator/products'
+      fullPath: '/creator/products'
+      preLoaderRoute: typeof CreatorProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/messages': {
+      id: '/creator/messages'
+      path: '/creator/messages'
+      fullPath: '/creator/messages'
+      preLoaderRoute: typeof CreatorMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/licenses': {
+      id: '/creator/licenses'
+      path: '/creator/licenses'
+      fullPath: '/creator/licenses'
+      preLoaderRoute: typeof CreatorLicensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/customers': {
+      id: '/creator/customers'
+      path: '/creator/customers'
+      fullPath: '/creator/customers'
+      preLoaderRoute: typeof CreatorCustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/analytics': {
+      id: '/creator/analytics'
+      path: '/creator/analytics'
+      fullPath: '/creator/analytics'
+      preLoaderRoute: typeof CreatorAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/achievements': {
+      id: '/creator/achievements'
+      path: '/creator/achievements'
+      fullPath: '/creator/achievements'
+      preLoaderRoute: typeof CreatorAchievementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/$handle': {
+      id: '/creator/$handle'
+      path: '/creator/$handle'
+      fullPath: '/creator/$handle'
+      preLoaderRoute: typeof CreatorHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/category/$slug': {
+      id: '/category/$slug'
+      path: '/category/$slug'
+      fullPath: '/category/$slug'
+      preLoaderRoute: typeof CategorySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/tickets': {
+      id: '/admin/tickets'
+      path: '/admin/tickets'
+      fullPath: '/admin/tickets'
+      preLoaderRoute: typeof AdminTicketsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/subscriptions': {
+      id: '/admin/subscriptions'
+      path: '/admin/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AdminSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/admin/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/revenue': {
+      id: '/admin/revenue'
+      path: '/admin/revenue'
+      fullPath: '/admin/revenue'
+      preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/admin/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/admin/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/organizations': {
+      id: '/admin/organizations'
+      path: '/admin/organizations'
+      fullPath: '/admin/organizations'
+      preLoaderRoute: typeof AdminOrganizationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/moderation': {
+      id: '/admin/moderation'
+      path: '/admin/moderation'
+      fullPath: '/admin/moderation'
+      preLoaderRoute: typeof AdminModerationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/flags': {
+      id: '/admin/flags'
+      path: '/admin/flags'
+      fullPath: '/admin/flags'
+      preLoaderRoute: typeof AdminFlagsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/creators': {
+      id: '/admin/creators'
+      path: '/admin/creators'
+      fullPath: '/admin/creators'
+      preLoaderRoute: typeof AdminCreatorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/coupons': {
+      id: '/admin/coupons'
+      path: '/admin/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/categories': {
+      id: '/admin/categories'
+      path: '/admin/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/admin/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  AuthRoute: AuthRoute,
+  CategoriesRoute: CategoriesRoute,
+  CollectionsRoute: CollectionsRoute,
+  CommunityRoute: CommunityRoute,
+  CreatorsRoute: CreatorsRoute,
+  LearningRoute: LearningRoute,
+  MarketplaceRoute: MarketplaceRoute,
+  OrganizationsRoute: OrganizationsRoute,
+  PublishRoute: PublishRoute,
+  TrendingRoute: TrendingRoute,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminAuditRoute: AdminAuditRoute,
+  AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminCouponsRoute: AdminCouponsRoute,
+  AdminCreatorsRoute: AdminCreatorsRoute,
+  AdminFlagsRoute: AdminFlagsRoute,
+  AdminModerationRoute: AdminModerationRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminOrganizationsRoute: AdminOrganizationsRoute,
+  AdminProductsRoute: AdminProductsRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminRevenueRoute: AdminRevenueRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminTicketsRoute: AdminTicketsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  CategorySlugRoute: CategorySlugRoute,
+  CreatorHandleRoute: CreatorHandleRoute,
+  CreatorAchievementsRoute: CreatorAchievementsRoute,
+  CreatorAnalyticsRoute: CreatorAnalyticsRoute,
+  CreatorCustomersRoute: CreatorCustomersRoute,
+  CreatorLicensesRoute: CreatorLicensesRoute,
+  CreatorMessagesRoute: CreatorMessagesRoute,
+  CreatorProductsRoute: CreatorProductsRoute,
+  CreatorRevenueRoute: CreatorRevenueRoute,
+  CreatorReviewsRoute: CreatorReviewsRoute,
+  CreatorSubscriptionsRoute: CreatorSubscriptionsRoute,
+  CreatorWithdrawalsRoute: CreatorWithdrawalsRoute,
+  DashboardBookmarksRoute: DashboardBookmarksRoute,
+  DashboardCollectionsRoute: DashboardCollectionsRoute,
+  DashboardFollowingRoute: DashboardFollowingRoute,
+  DashboardLicensesRoute: DashboardLicensesRoute,
+  DashboardMessagesRoute: DashboardMessagesRoute,
+  DashboardNotificationsRoute: DashboardNotificationsRoute,
+  DashboardPurchasesRoute: DashboardPurchasesRoute,
+  DashboardSubscriptionsRoute: DashboardSubscriptionsRoute,
+  DashboardSupportRoute: DashboardSupportRoute,
+  DashboardWishlistRoute: DashboardWishlistRoute,
+  ProductSlugRoute: ProductSlugRoute,
+  SettingsApiKeysRoute: SettingsApiKeysRoute,
+  SettingsAppearanceRoute: SettingsAppearanceRoute,
+  SettingsBillingRoute: SettingsBillingRoute,
+  SettingsConnectedRoute: SettingsConnectedRoute,
+  SettingsNotificationsRoute: SettingsNotificationsRoute,
+  SettingsOrganizationRoute: SettingsOrganizationRoute,
+  SettingsSecurityRoute: SettingsSecurityRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  CreatorIndexRoute: CreatorIndexRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
