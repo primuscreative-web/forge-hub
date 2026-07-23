@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/layouts";
-import { creators, products } from "@/lib/mock-data";
+import { CATALOG_API_BASE_URL, resolveCreatorPage } from "@/lib/catalog-api";
 import { ProductCard, formatCompact } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,10 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, ShieldCheck, MapPin, Calendar, MessageCircle, UserPlus, Share2 } from "lucide-react";
 
 export const Route = createFileRoute("/creator/$handle")({
-  loader: ({ params }) => {
-    const creator = creators.find((c) => c.handle === params.handle);
-    if (!creator) throw notFound();
-    return { creator };
+  loader: async ({ params }) => {
+    const data = await resolveCreatorPage(CATALOG_API_BASE_URL, params.handle);
+    if (!data.creator) throw notFound();
+    return { creator: data.creator, creatorProducts: data.products };
   },
   head: ({ loaderData }) => {
     const c = loaderData?.creator;
@@ -32,8 +32,7 @@ export const Route = createFileRoute("/creator/$handle")({
 });
 
 function CreatorProfile() {
-  const { creator } = Route.useLoaderData();
-  const creatorProducts = products.filter((p) => p.creator === creator.id);
+  const { creator, creatorProducts } = Route.useLoaderData();
 
   return (
     <SiteLayout>

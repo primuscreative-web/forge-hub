@@ -16,7 +16,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, SlidersHorizontal, LayoutGrid, List, Star } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/marketplace")({
   head: () => ({
@@ -38,10 +38,8 @@ export const Route = createFileRoute("/marketplace")({
 });
 
 function MarketplacePage() {
-  const { data, loading, error } = useCatalogData();
-  const products = data?.products ?? [];
-  const categories = data?.categories ?? [];
   const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
   const [sort, setSort] = useState("popular");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [priceMax, setPriceMax] = useState([500]);
@@ -53,6 +51,18 @@ function MarketplacePage() {
     premium: false,
     enterprise: false,
   });
+  const productQuery = useMemo(
+    () => ({ q: debouncedQ, categories: selected, sort }),
+    [debouncedQ, selected, sort],
+  );
+  const { data, loading, error } = useCatalogData(productQuery);
+  const products = data?.products ?? [];
+  const categories = data?.categories ?? [];
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setDebouncedQ(q), 250);
+    return () => window.clearTimeout(timeout);
+  }, [q]);
 
   const filtered = useMemo(() => {
     let list = products.slice();

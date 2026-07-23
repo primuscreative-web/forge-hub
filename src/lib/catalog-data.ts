@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 
-import { resolveCatalogData } from "./catalog-api";
+import { CATALOG_API_BASE_URL, resolveCatalogData, type CatalogProductQuery } from "./catalog-api";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api/v1";
-
-export function useCatalogData() {
+export function useCatalogData(productQuery: CatalogProductQuery = {}) {
   const [data, setData] = useState<Awaited<ReturnType<typeof resolveCatalogData>> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -13,13 +11,14 @@ export function useCatalogData() {
     let mounted = true;
 
     async function load() {
+      if (mounted) setLoading(true);
       try {
-        const result = await resolveCatalogData(API_BASE_URL, {
+        const result = await resolveCatalogData(CATALOG_API_BASE_URL, {
           categories: [],
           products: [],
           creators: [],
           product: null,
-        });
+        }, productQuery);
         if (mounted) {
           setData(result);
           setError(null);
@@ -39,7 +38,7 @@ export function useCatalogData() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [productQuery.q, productQuery.creator, productQuery.sort, productQuery.categories?.join(",")]);
 
   return { data, loading, error };
 }

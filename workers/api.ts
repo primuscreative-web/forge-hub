@@ -50,10 +50,23 @@ type CatalogCreator = {
 type Env = {
   DB?: {
     prepare: (query: string) => {
+      bind: (...values: unknown[]) => {
+        all: () => Promise<{ results?: Array<Record<string, unknown>> }>;
+        first: () => Promise<Record<string, unknown> | null>;
+      };
       all: () => Promise<{ results?: Array<Record<string, unknown>> }>;
     };
   };
 };
+
+const MAX_RESULTS = 50;
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const PRODUCT_SELECT = `
+  SELECT id, slug, name, tagline, category, price, free, open_source, premium,
+    enterprise, rating, reviews, sales, downloads, views, created_at, version,
+    gradient, emoji, tech, description, creator, trending, new
+  FROM products
+`;
 
 function toBoolean(value: unknown): boolean {
   return value === true || value === 1 || value === "1" || value === "true";
@@ -173,6 +186,143 @@ function jsonResponse(payload: unknown, status = 200) {
   });
 }
 
+function errorResponse(status: number, code: string, message: string) {
+  return jsonResponse({ error: { code, message } }, status);
+}
+
+function isValidSlug(value: string): boolean {
+  return value.length > 0 && value.length <= 80 && SLUG_PATTERN.test(value);
+}
+
+function mapProduct(row: Record<string, unknown>) {
+  return {
+    id: String(row.id ?? ""),
+    slug: String(row.slug ?? ""),
+    name: String(row.name ?? ""),
+    tagline: String(row.tagline ?? ""),
+    description: String(row.description ?? ""),
+    category: String(row.category ?? ""),
+    subcategories: [String(row.category ?? "")],
+    tags: toStringArray(row.tech),
+    tech: toStringArray(row.tech),
+    price: toNumber(row.price),
+    license: toNumber(row.price) === 0 ? ["MIT"] : ["Personal", "Commercial", "Enterprise"],
+    free: toBoolean(row.free),
+    openSource: toBoolean(row.open_source),
+    premium: toBoolean(row.premium),
+    enterprise: toBoolean(row.enterprise),
+    rating: toNumber(row.rating),
+    reviews: toNumber(row.reviews),
+    sales: toNumber(row.sales),
+    downloads: toNumber(row.downloads),
+    views: toNumber(row.views),
+    bookmarks: Math.max(0, Math.floor(toNumber(row.sales) * 0.4)),
+    version: String(row.version ?? "1.0.0"),
+    updatedAt: String(row.created_at ?? ""),
+    createdAt: String(row.created_at ?? ""),
+    creator: String(row.creator ?? ""),
+    featured: false,
+    trending: toBoolean(row.trending),
+    new: toBoolean(row.new),
+    gradient: String(row.gradient ?? seedProducts[0].gradient),
+    emoji: String(row.emoji ?? seedProducts[0].emoji),
+  };
+}
+
+function mapCreator(row: Record<string, unknown>) {
+  return {
+    id: String(row.id ?? ""),
+    handle: String(row.handle ?? ""),
+    name: String(row.name ?? ""),
+    avatar: String(row.avatar ?? ""),
+    verified: toBoolean(row.verified),
+    followers: toNumber(row.followers),
+    sales: toNumber(row.sales),
+    rating: toNumber(row.rating),
+    bio: String(row.bio ?? ""),
+    location: String(row.location ?? ""),
+    joined: String(row.joined ?? ""),
+    organization: row.organization ? String(row.organization) : undefined,
+  };
+}
+
+async function listProducts(env: Env, url: URL) {
+  if (!env.DB) return null;
+
+  const q = (url.searchParams.get("q") ?? "").trim();
+  const categoryValue = url.searchParams.get("category") ?? "";
+  const creator = url.searchParams.get("creator") ?? "";
+  const sort = url.searchParams.get("sort") ?? "popular";
+  const limitValue = url.searchParams.get("limit") ?? String(MAX_RESULTS);
+  const categories = categoryValue ? categoryValue.split(",").filter(Boolean) : [];
+  const limit = Number(limitValue);
+
+  if (q.length > 100 || /[\u0000-\u001f]/.test(q)) {
+    return errorResponse(400, "INVALID_QUERY", "Invalid search query");
+  }
+  if (categories.length > 10 || categories.some((value) => !isValidSlug(value))) {
+    return errorResponse(400, "INVALID_CATEGORY", "Invalid category");
+  }
+  if (creator && !isValidSlug(creator)) {
+    return errorResponse(400, "INVALID_CREATOR", "Invalid creator");
+  }
+  if (!Number.isInteger(limit) || limit < 1 || limit > MAX_RESULTS) {
+    return errorResponse(400, "INVALID_LIMIT", `Limit must be between 1 and ${MAX_RESULTS}`);
+  }
+
+  const orderBy: Record<string, string> = {
+    popular: "sales DESC, id ASC",
+    new: "created_at DESC, id ASC",
+    rating: "rating DESC, id ASC",
+    "price-asc": "price ASC, id ASC",
+    "price-desc": "price DESC, id ASC",
+  };
+  if (!orderBy[sort]) return errorResponse(400, "INVALID_SORT", "Invalid sort option");
+
+  const conditions = ["datetime(created_at) <= datetime('now')"];
+  const values: unknown[] = [];
+  if (q) {
+    conditions.push("(name LIKE ? ESCAPE '\\' OR tagline LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\' OR tech LIKE ? ESCAPE '\\')");
+    const escaped = q.replace(/[\\%_]/g, "\\$&");
+    values.push(`%${escaped}%`, `%${escaped}%`, `%${escaped}%`, `%${escaped}%`);
+  }
+  if (categories.length) {
+    conditions.push(`category IN (${categories.map(() => "?").join(", ")})`);
+    values.push(...categories);
+  }
+  if (creator) {
+    conditions.push("creator = ?");
+    values.push(creator);
+  }
+  values.push(limit);
+
+  const statement = env.DB.prepare(
+    `${PRODUCT_SELECT} WHERE ${conditions.join(" AND ")} ORDER BY ${orderBy[sort]} LIMIT ?`,
+  );
+  const result = await statement.bind(...values).all();
+  return (result.results ?? []).map(mapProduct);
+}
+
+async function findProduct(env: Env, slug: string) {
+  if (!env.DB) return null;
+  const row = await env.DB
+    .prepare(`${PRODUCT_SELECT} WHERE slug = ? AND datetime(created_at) <= datetime('now') LIMIT 1`)
+    .bind(slug)
+    .first();
+  return row ? mapProduct(row) : null;
+}
+
+async function findCreator(env: Env, slug: string) {
+  if (!env.DB) return null;
+  const row = await env.DB
+    .prepare(
+      "SELECT id, handle, name, avatar, verified, followers, sales, rating, bio, location, joined, organization FROM creators WHERE handle = ? OR id = ? LIMIT 1",
+    )
+    .bind(slug, slug)
+    .first();
+  return row ? mapCreator(row) : null;
+}
+
 async function readCatalogFromD1(env: Env) {
   if (!env.DB) return null;
   try {
@@ -187,53 +337,8 @@ async function readCatalogFromD1(env: Env) {
       group: String(row.group_name ?? "Products"),
     }));
 
-    const products = (productsResult.results ?? []).map((row) => ({
-      id: String(row.id ?? ""),
-      slug: String(row.slug ?? ""),
-      name: String(row.name ?? ""),
-      tagline: String(row.tagline ?? ""),
-      description: String(row.description ?? ""),
-      category: String(row.category ?? ""),
-      subcategories: [String(row.category ?? "")],
-      tags: toStringArray(row.tech),
-      tech: toStringArray(row.tech),
-      price: toNumber(row.price),
-      license: toNumber(row.price) === 0 ? ["MIT"] : ["Personal", "Commercial", "Enterprise"],
-      free: toBoolean(row.free),
-      openSource: toBoolean(row.open_source),
-      premium: toBoolean(row.premium),
-      enterprise: toBoolean(row.enterprise),
-      rating: toNumber(row.rating),
-      reviews: toNumber(row.reviews),
-      sales: toNumber(row.sales),
-      downloads: toNumber(row.downloads),
-      views: toNumber(row.views),
-      bookmarks: Math.max(0, Math.floor(toNumber(row.sales) * 0.4)),
-      version: String(row.version ?? "1.0.0"),
-      updatedAt: String(row.created_at ?? new Date().toISOString()),
-      createdAt: String(row.created_at ?? new Date().toISOString()),
-      creator: String(row.creator ?? "c1"),
-      featured: false,
-      trending: toBoolean(row.trending),
-      new: toBoolean(row.new),
-      gradient: String(row.gradient ?? seedProducts[0].gradient),
-      emoji: String(row.emoji ?? seedProducts[0].emoji),
-    }));
-
-    const creators = (creatorsResult.results ?? []).map((row) => ({
-      id: String(row.id ?? ""),
-      handle: String(row.handle ?? ""),
-      name: String(row.name ?? ""),
-      avatar: String(row.avatar ?? ""),
-      verified: toBoolean(row.verified),
-      followers: toNumber(row.followers),
-      sales: toNumber(row.sales),
-      rating: toNumber(row.rating),
-      bio: String(row.bio ?? ""),
-      location: String(row.location ?? ""),
-      joined: String(row.joined ?? ""),
-      organization: row.organization ? String(row.organization) : undefined,
-    }));
+    const products = (productsResult.results ?? []).map(mapProduct);
+    const creators = (creatorsResult.results ?? []).map(mapCreator);
 
     return { categories, products, creators };
   } catch {
@@ -266,8 +371,13 @@ export default {
     }
 
     if (url.pathname === "/api/v1/products") {
-      const data = await readCatalogFromD1(env);
-      return jsonResponse(data?.products ?? seedProducts);
+      try {
+        const result = await listProducts(env, url);
+        if (result instanceof Response) return result;
+        return jsonResponse(result ?? seedProducts);
+      } catch {
+        return errorResponse(500, "INTERNAL_ERROR", "Unable to load products");
+      }
     }
 
     if (url.pathname === "/api/v1/creators") {
@@ -275,14 +385,34 @@ export default {
       return jsonResponse(data?.creators ?? seedCreators);
     }
 
-    if (url.pathname === "/api/v1/products/preview") {
-      return jsonResponse(seedProducts[0]);
-    }
-
     if (url.pathname.startsWith("/api/v1/products/")) {
       const slug = url.pathname.replace("/api/v1/products/", "");
-      const product = seedProducts.find((entry) => entry.slug === slug) ?? null;
-      return jsonResponse(product);
+      if (!isValidSlug(slug)) return errorResponse(400, "INVALID_SLUG", "Invalid product slug");
+      try {
+        const product = (await findProduct(env, slug)) ??
+          (!env.DB ? seedProducts.find((entry) => entry.slug === slug) : null);
+        return product
+          ? jsonResponse(product)
+          : errorResponse(404, "NOT_FOUND", "Product not found");
+      } catch {
+        return errorResponse(500, "INTERNAL_ERROR", "Unable to load product");
+      }
+    }
+
+    if (url.pathname.startsWith("/api/v1/creators/")) {
+      const slug = url.pathname.replace("/api/v1/creators/", "");
+      if (!isValidSlug(slug)) return errorResponse(400, "INVALID_SLUG", "Invalid creator slug");
+      try {
+        const creator = (await findCreator(env, slug)) ??
+          (!env.DB
+            ? seedCreators.find((entry) => entry.handle === slug || entry.id === slug)
+            : null);
+        return creator
+          ? jsonResponse(creator)
+          : errorResponse(404, "NOT_FOUND", "Creator not found");
+      } catch {
+        return errorResponse(500, "INTERNAL_ERROR", "Unable to load creator");
+      }
     }
 
     return jsonResponse({ error: "Not found" }, 404);

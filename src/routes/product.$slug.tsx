@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/layouts";
-import { products, getProduct, getCreator, reviews, changelog, faqs } from "@/lib/mock-data";
+import { reviews, changelog, faqs } from "@/lib/mock-data";
+import { CATALOG_API_BASE_URL, resolveProductPage } from "@/lib/catalog-api";
 import { ProductCard, formatCompact } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,10 +37,10 @@ import {
 import { useState } from "react";
 
 export const Route = createFileRoute("/product/$slug")({
-  loader: ({ params }) => {
-    const product = getProduct(params.slug);
-    if (!product) throw notFound();
-    return { product };
+  loader: async ({ params }) => {
+    const data = await resolveProductPage(CATALOG_API_BASE_URL, params.slug);
+    if (!data.product || !data.creator) throw notFound();
+    return { product: data.product, creator: data.creator, related: data.related };
   },
   head: ({ loaderData }) => {
     const p = loaderData?.product;
@@ -62,11 +63,7 @@ export const Route = createFileRoute("/product/$slug")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
-  const creator = getCreator(product.creator);
-  const related = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const { product, creator, related } = Route.useLoaderData();
   const [tier, setTier] = useState<"personal" | "commercial" | "enterprise">("commercial");
 
   const pricing = {
