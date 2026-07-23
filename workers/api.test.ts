@@ -143,6 +143,7 @@ test("valid registration creates a secure session", async () => {
   const response = await register(env());
   assert.equal(response.status, 201);
   assert.match(response.headers.get("set-cookie") ?? "", /HttpOnly; Secure; Path=\/; SameSite=None/);
+  assert.match(response.headers.get("set-cookie") ?? "", /Partitioned/);
   const body = await response.json() as { user: Row };
   assert.equal(body.user.email, "ada@example.com");
   assert.equal("password_hash" in body.user, false);

@@ -340,7 +340,8 @@ function cookieToken(request: Request) {
 
 function sessionCookie(token: string, env: Env, expires = SESSION_TTL_SECONDS) {
   const sameSite = env.ENVIRONMENT === "same-site-production" ? "Lax" : "None";
-  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Secure; Path=/; SameSite=${sameSite}; Max-Age=${expires}`;
+  const partitioned = sameSite === "None" ? "; Partitioned" : "";
+  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Secure; Path=/; SameSite=${sameSite}; Max-Age=${expires}${partitioned}`;
 }
 
 function rateLimited(key: string) {
