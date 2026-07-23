@@ -53,14 +53,25 @@ type Env = {
       bind: (...values: unknown[]) => {
         all: () => Promise<{ results?: Array<Record<string, unknown>> }>;
         first: () => Promise<Record<string, unknown> | null>;
+        run: () => Promise<{ success: boolean }>;
       };
       all: () => Promise<{ results?: Array<Record<string, unknown>> }>;
+      run: () => Promise<{ success: boolean }>;
     };
   };
+  ALLOWED_ORIGINS?: string;
+  ENVIRONMENT?: string;
 };
 
 const MAX_RESULTS = 50;
+const SESSION_COOKIE = "devforge_session";
+const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
+const PASSWORD_ITERATIONS = 100_000;
+const AUTH_LIMIT = 10;
+const AUTH_WINDOW_MS = 15 * 60 * 1000;
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const authAttempts = new Map<string, { count: number; resetAt: number }>();
 const PRODUCT_SELECT = `
   SELECT id, slug, name, tagline, category, price, free, open_source, premium,
     enterprise, rating, reviews, sales, downloads, views, created_at, version,
@@ -188,6 +199,255 @@ function jsonResponse(payload: unknown, status = 200) {
 
 function errorResponse(status: number, code: string, message: string) {
   return jsonResponse({ error: { code, message } }, status);
+}
+
+function allowedOrigin(request: Request, env: Env) {
+  const origin = request.headers.get("origin");
+  if (!origin) return null;
+  const allowed = (env.ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const permitted = allowed.some((entry) => {
+    if (entry === origin) return true;
+    const wildcard = entry.indexOf("*");
+    return wildcard >= 0 && origin.startsWith(entry.slice(0, wildcard)) && origin.endsWith(entry.slice(wildcard + 1));
+  });
+  return permitted ? origin : null;
+}
+
+function privateResponse(request: Request, env: Env, payload: unknown, status = 200, cookie?: string) {
+  const origin = allowedOrigin(request, env);
+  const headers = new Headers({
+    "cache-control": "no-store",
+    "content-type": "application/json; charset=utf-8",
+    vary: "Origin",
+  });
+  if (origin) {
+    headers.set("access-control-allow-credentials", "true");
+    headers.set("access-control-allow-origin", origin);
+  }
+  if (cookie) headers.set("set-cookie", cookie);
+  return new Response(JSON.stringify(payload), { status, headers });
+}
+
+function authError(request: Request, env: Env, status: number, code: string, message: string) {
+  return privateResponse(request, env, { error: { code, message } }, status);
+}
+
+function bytesToBase64(bytes: Uint8Array) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function base64ToBytes(value: string) {
+  const binary = atob(value);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+async function sha256(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return bytesToBase64(new Uint8Array(digest));
+}
+
+async function hashPassword(password: string) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt, iterations: PASSWORD_ITERATIONS },
+    key,
+    256,
+  );
+  return `pbkdf2-sha256$${PASSWORD_ITERATIONS}$${bytesToBase64(salt)}$${bytesToBase64(new Uint8Array(bits))}`;
+}
+
+async function verifyPassword(password: string, encoded: string) {
+  const [algorithm, iterationsValue, saltValue, hashValue] = encoded.split("$");
+  const iterations = Number(iterationsValue);
+  if (algorithm !== "pbkdf2-sha256" || !Number.isInteger(iterations) || !saltValue || !hashValue) return false;
+  const expected = base64ToBytes(hashValue);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: base64ToBytes(saltValue), iterations },
+    key,
+    expected.length * 8,
+  );
+  const actual = new Uint8Array(bits);
+  if (actual.length !== expected.length) return false;
+  let mismatch = 0;
+  for (let index = 0; index < actual.length; index += 1) mismatch |= actual[index] ^ expected[index];
+  return mismatch === 0;
+}
+
+function normalizeEmail(value: unknown) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function validPassword(value: unknown): value is string {
+  return typeof value === "string" && value.length >= 10 && value.length <= 128;
+}
+
+function publicUser(row: Record<string, unknown>) {
+  return {
+    id: String(row.id),
+    email: String(row.email),
+    displayName: String(row.display_name),
+    role: String(row.role),
+    status: String(row.status),
+    emailVerifiedAt: row.email_verified_at ? String(row.email_verified_at) : null,
+    createdAt: String(row.created_at),
+  };
+}
+
+function cookieToken(request: Request) {
+  const cookie = request.headers.get("cookie") ?? "";
+  for (const part of cookie.split(";")) {
+    const [name, ...value] = part.trim().split("=");
+    if (name === SESSION_COOKIE) return decodeURIComponent(value.join("="));
+  }
+  return null;
+}
+
+function sessionCookie(token: string, env: Env, expires = SESSION_TTL_SECONDS) {
+  const sameSite = env.ENVIRONMENT === "same-site-production" ? "Lax" : "None";
+  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Secure; Path=/; SameSite=${sameSite}; Max-Age=${expires}`;
+}
+
+function rateLimited(key: string) {
+  const now = Date.now();
+  const entry = authAttempts.get(key);
+  if (!entry || entry.resetAt <= now) {
+    authAttempts.set(key, { count: 1, resetAt: now + AUTH_WINDOW_MS });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > AUTH_LIMIT;
+}
+
+async function requestBody(request: Request) {
+  if (!(request.headers.get("content-type") ?? "").includes("application/json")) return null;
+  try {
+    return (await request.json()) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+async function createSession(request: Request, env: Env, userId: string) {
+  const token = bytesToBase64(crypto.getRandomValues(new Uint8Array(32)));
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + SESSION_TTL_SECONDS * 1000).toISOString();
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  await env.DB!.prepare(
+    "INSERT INTO sessions (id, user_id, token_hash, expires_at, created_at, last_seen_at, user_agent, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+  )
+    .bind(
+      crypto.randomUUID(),
+      userId,
+      await sha256(token),
+      expiresAt,
+      now.toISOString(),
+      now.toISOString(),
+      request.headers.get("user-agent")?.slice(0, 500) ?? null,
+      await sha256(ip),
+    )
+    .run();
+  return token;
+}
+
+async function authenticatedUser(request: Request, env: Env) {
+  const token = cookieToken(request);
+  if (!token || !env.DB) return null;
+  const row = await env.DB.prepare(
+    `SELECT users.id, users.email, users.display_name, users.role, users.status,
+      users.email_verified_at, users.created_at, sessions.id AS session_id
+     FROM sessions JOIN users ON users.id = sessions.user_id
+     WHERE sessions.token_hash = ? AND sessions.revoked_at IS NULL
+       AND datetime(sessions.expires_at) > datetime('now') AND users.status = 'active'
+     LIMIT 1`,
+  ).bind(await sha256(token)).first();
+  if (!row) return null;
+  await env.DB.prepare("UPDATE sessions SET last_seen_at = ? WHERE id = ?")
+    .bind(new Date().toISOString(), row.session_id)
+    .run();
+  return row;
+}
+
+async function handleAuth(request: Request, env: Env, pathname: string) {
+  if (!env.DB) return authError(request, env, 503, "SERVICE_UNAVAILABLE", "Authentication unavailable");
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+
+  if (pathname === "/api/v1/auth/register" && request.method === "POST") {
+    const body = await requestBody(request);
+    const email = normalizeEmail(body?.email);
+    const password = body?.password;
+    const displayName = typeof body?.displayName === "string" ? body.displayName.trim() : "";
+    if (rateLimited(`register:${ip}`)) return authError(request, env, 429, "RATE_LIMITED", "Too many attempts");
+    if (!EMAIL_PATTERN.test(email) || email.length > 254 || !validPassword(password) || displayName.length < 2 || displayName.length > 80) {
+      return authError(request, env, 400, "INVALID_INPUT", "Invalid registration data");
+    }
+    const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ? LIMIT 1").bind(email).first();
+    if (existing) return authError(request, env, 409, "EMAIL_EXISTS", "Email already registered");
+    const now = new Date().toISOString();
+    const userId = crypto.randomUUID();
+    await env.DB.prepare(
+      "INSERT INTO users (id, email, password_hash, display_name, role, status, created_at, updated_at) VALUES (?, ?, ?, ?, 'buyer', 'active', ?, ?)",
+    ).bind(userId, email, await hashPassword(password), displayName, now, now).run();
+    const user = await env.DB.prepare("SELECT id, email, display_name, role, status, email_verified_at, created_at FROM users WHERE id = ?")
+      .bind(userId).first();
+    const token = await createSession(request, env, userId);
+    return privateResponse(request, env, { user: publicUser(user!) }, 201, sessionCookie(token, env));
+  }
+
+  if (pathname === "/api/v1/auth/login" && request.method === "POST") {
+    const body = await requestBody(request);
+    const email = normalizeEmail(body?.email);
+    const password = body?.password;
+    if (rateLimited(`login:${ip}:${email}`)) return authError(request, env, 429, "RATE_LIMITED", "Too many attempts");
+    if (!EMAIL_PATTERN.test(email) || !validPassword(password)) {
+      return authError(request, env, 401, "INVALID_CREDENTIALS", "Invalid email or password");
+    }
+    const user = await env.DB.prepare("SELECT id, email, password_hash, display_name, role, status, email_verified_at, created_at FROM users WHERE email = ? LIMIT 1")
+      .bind(email).first();
+    if (!user || user.status !== "active" || !(await verifyPassword(password, String(user.password_hash)))) {
+      return authError(request, env, 401, "INVALID_CREDENTIALS", "Invalid email or password");
+    }
+    await env.DB.prepare("UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL")
+      .bind(new Date().toISOString(), user.id).run();
+    const token = await createSession(request, env, String(user.id));
+    return privateResponse(request, env, { user: publicUser(user) }, 200, sessionCookie(token, env));
+  }
+
+  if (pathname === "/api/v1/auth/logout" && request.method === "POST") {
+    const token = cookieToken(request);
+    if (token) {
+      await env.DB.prepare("UPDATE sessions SET revoked_at = ? WHERE token_hash = ? AND revoked_at IS NULL")
+        .bind(new Date().toISOString(), await sha256(token)).run();
+    }
+    return privateResponse(request, env, { ok: true }, 200, sessionCookie("", env, 0));
+  }
+
+  if (pathname === "/api/v1/auth/me" && request.method === "GET") {
+    const user = await authenticatedUser(request, env);
+    return user
+      ? privateResponse(request, env, { user: publicUser(user) })
+      : authError(request, env, 401, "UNAUTHENTICATED", "Authentication required");
+  }
+
+  return authError(request, env, 404, "NOT_FOUND", "Not found");
 }
 
 function isValidSlug(value: string): boolean {
@@ -351,14 +611,28 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === "OPTIONS") {
+      const origin = allowedOrigin(request, env);
+      if (!origin) return new Response(null, { status: 403 });
       return new Response(null, {
         status: 204,
         headers: {
           "access-control-allow-headers": "Content-Type",
-          "access-control-allow-methods": "GET, OPTIONS",
-          "access-control-allow-origin": "*",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "access-control-allow-origin": origin,
+          "access-control-allow-credentials": "true",
+          "access-control-max-age": "86400",
+          vary: "Origin",
         },
       });
+    }
+
+    if (url.pathname.startsWith("/api/v1/auth/")) {
+      try {
+        return await handleAuth(request, env, url.pathname);
+      } catch (error) {
+        console.error("Authentication request failed", error instanceof Error ? error.message : "Unknown error");
+        return authError(request, env, 500, "INTERNAL_ERROR", "Unable to process authentication");
+      }
     }
 
     if (url.pathname === "/api/health") {

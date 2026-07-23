@@ -25,6 +25,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
 import { CommandPalette } from "./command-palette";
+import { useAuth } from "@/lib/auth";
 
 const nav = [
   { label: "Marketplace", to: "/marketplace" },
@@ -178,21 +179,36 @@ function NotificationsMenu() {
 }
 
 function UserMenu() {
+  const { user, loading, logout } = useAuth();
+  if (loading) return <div className="size-8" aria-hidden="true" />;
+  if (!user) {
+    return (
+      <Button asChild variant="outline" size="sm">
+        <Link to="/auth">Sign in</Link>
+      </Button>
+    );
+  }
+  const initials = user.displayName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 ring-primary ring-offset-2 ring-offset-background">
           <Avatar className="size-8 border border-border/60">
             <AvatarFallback className="gradient-brand text-white text-xs font-semibold">
-              AL
+              {initials}
             </AvatarFallback>
           </Avatar>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col">
-          <span className="text-sm font-medium">Acme Labs</span>
-          <span className="text-xs text-muted-foreground">alex@acme.labs</span>
+          <span className="text-sm font-medium">{user.displayName}</span>
+          <span className="text-xs text-muted-foreground">{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
@@ -223,8 +239,8 @@ function UserMenu() {
         <DropdownMenuItem asChild>
           <Link to="/settings">Settings</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/auth">Sign out</Link>
+        <DropdownMenuItem onSelect={() => void logout()}>
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

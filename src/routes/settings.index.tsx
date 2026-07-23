@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/settings/")({
   head: () => ({
@@ -18,7 +19,13 @@ export const Route = createFileRoute("/settings/")({
       { property: "og:description", content: "Manage your account and preferences." },
     ],
   }),
-  component: () => (
+  component: SettingsPage,
+});
+
+function SettingsPage() {
+  const { user } = useAuth();
+  const initials = user?.displayName.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "U";
+  return (
     <DashboardLayout side={<SideNav items={settingsNav} title="Settings" />}>
       <div className="p-6 md:p-8 max-w-[900px] space-y-8">
         <PageHeader title="General" description="Your public profile and basic account info." />
@@ -26,7 +33,7 @@ export const Route = createFileRoute("/settings/")({
         <Section title="Profile">
           <div className="flex items-center gap-4">
             <Avatar className="size-16">
-              <AvatarFallback className="gradient-brand text-white text-xl">AL</AvatarFallback>
+              <AvatarFallback className="gradient-brand text-white text-xl">{initials}</AvatarFallback>
             </Avatar>
             <div className="flex gap-2">
               <Button variant="outline" size="sm">
@@ -39,7 +46,7 @@ export const Route = createFileRoute("/settings/")({
           </div>
           <div className="grid grid-cols-2 gap-4 mt-4">
             <Field label="Full name">
-              <Input defaultValue="Acme Labs" className="bg-surface-1" />
+              <Input value={user?.displayName ?? ""} readOnly className="bg-surface-1" />
             </Field>
             <Field label="Handle">
               <Input defaultValue="acme-labs" className="bg-surface-1 font-mono" />
@@ -64,7 +71,7 @@ export const Route = createFileRoute("/settings/")({
 
         <Section title="Contact">
           <Field label="Email">
-            <Input type="email" defaultValue="alex@acme.labs" className="bg-surface-1" />
+            <Input type="email" value={user?.email ?? ""} readOnly className="bg-surface-1" />
           </Field>
           <Field label="Language">
             <Input defaultValue="English" className="bg-surface-1" />
@@ -91,8 +98,8 @@ export const Route = createFileRoute("/settings/")({
         </Section>
       </div>
     </DashboardLayout>
-  ),
-});
+  );
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

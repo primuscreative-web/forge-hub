@@ -4,6 +4,10 @@
   "compatibility_date": "2026-07-22",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./workers/api.ts",
+  "vars": {
+    "ALLOWED_ORIGINS": "https://forge-hub-nine.vercel.app,https://forge-*-primuscreative-webs-projects.vercel.app",
+    "ENVIRONMENT": "cross-site-preview"
+  },
   "d1_databases": [
     {
       "binding": "DB",
