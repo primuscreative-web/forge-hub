@@ -11,7 +11,9 @@ export function ProductCard({
   product: Product;
   size?: "sm" | "md" | "lg";
 }) {
-  const creator = getCreator(product.creator);
+  const creator = product.creatorName
+    ? { name: product.creatorName, avatar: product.creatorName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase() }
+    : getCreator(product.creator);
   return (
     <Link
       to="/product/$slug"

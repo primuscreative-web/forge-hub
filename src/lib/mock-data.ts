@@ -339,6 +339,8 @@ export type Product = {
   updatedAt: string;
   createdAt: string;
   creator: string; // creator id
+  creatorName?: string;
+  creatorAvatar?: string;
   featured: boolean;
   trending: boolean;
   new: boolean;

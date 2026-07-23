@@ -233,10 +233,11 @@ function MarketplacePage() {
 
             {filtered.length === 0 ? (
               <div className="card-elegant rounded-xl p-16 text-center">
-                <div className="text-lg font-medium">No products found</div>
+                <div className="text-lg font-medium">{products.length === 0 ? "No published products yet" : "No products found"}</div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your filters or search.
+                  {products.length === 0 ? "Be the first creator to publish." : "Try adjusting your filters or search."}
                 </p>
+                {products.length === 0 && <Button asChild className="mt-5"><Link to="/creator">Open Creator Dashboard</Link></Button>}
               </div>
             ) : view === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">

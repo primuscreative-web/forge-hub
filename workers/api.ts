@@ -78,6 +78,23 @@ const PRODUCT_SELECT = `
     gradient, emoji, tech, description, creator, trending, new
   FROM products
 `;
+const CREATOR_PRODUCT_SELECT = `
+  SELECT creator_products.id, creator_products.slug, creator_products.name,
+    creator_products.short_description AS tagline, creator_products.description,
+    creator_products.category_id AS category, creator_products.price_cents,
+    creator_products.product_type, creator_products.thumbnail_url,
+    creator_products.gallery, creator_products.status, creator_products.version,
+    creator_products.demo_url, creator_products.repository_url,
+    creator_products.documentation_url, creator_products.created_at,
+    creator_products.updated_at, creator_products.published_at,
+    creator_products.creator_id AS creator,
+    creator_profiles.display_name AS creator_name,
+    creator_profiles.avatar_url AS creator_avatar
+  FROM creator_products
+  JOIN creator_profiles ON creator_profiles.id = creator_products.creator_id AND creator_profiles.status = 'active'
+`;
+const RESERVED_SLUGS = new Set(["admin", "api", "auth", "creator", "creators", "dashboard", "marketplace", "publish", "settings", "support"]);
+const PRODUCT_TYPES = new Set(["saas", "template", "boilerplate", "ui_kit", "api", "sdk", "ai_agent", "prompt", "mcp", "devops", "documentation", "other"]);
 
 function toBoolean(value: unknown): boolean {
   return value === true || value === 1 || value === "1" || value === "true";
@@ -450,11 +467,181 @@ async function handleAuth(request: Request, env: Env, pathname: string) {
   return authError(request, env, 404, "NOT_FOUND", "Not found");
 }
 
+function normalizedSlug(value: unknown) {
+  return typeof value === "string"
+    ? value.trim().toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+    : "";
+}
+
+function optionalUrl(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string" || value.length > 2048) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function mapCreatorProfile(row: Record<string, unknown>) {
+  return {
+    id: String(row.id), userId: String(row.user_id), slug: String(row.slug),
+    displayName: String(row.display_name), headline: String(row.headline), bio: String(row.bio),
+    avatarUrl: row.avatar_url ? String(row.avatar_url) : null,
+    coverUrl: row.cover_url ? String(row.cover_url) : null,
+    websiteUrl: row.website_url ? String(row.website_url) : null,
+    githubUrl: row.github_url ? String(row.github_url) : null,
+    location: row.location ? String(row.location) : null, status: String(row.status),
+    createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+  };
+}
+
+function mapCreatorProduct(row: Record<string, unknown>) {
+  return {
+    id: String(row.id), creatorId: String(row.creator_id), categoryId: String(row.category_id),
+    name: String(row.name), slug: String(row.slug), shortDescription: String(row.short_description),
+    description: String(row.description), productType: String(row.product_type),
+    priceCents: toNumber(row.price_cents), currency: String(row.currency),
+    thumbnailUrl: row.thumbnail_url ? String(row.thumbnail_url) : null,
+    gallery: typeof row.gallery === "string" ? JSON.parse(row.gallery) : [], status: String(row.status),
+    version: String(row.version), demoUrl: row.demo_url ? String(row.demo_url) : null,
+    repositoryUrl: row.repository_url ? String(row.repository_url) : null,
+    documentationUrl: row.documentation_url ? String(row.documentation_url) : null,
+    createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+    publishedAt: row.published_at ? String(row.published_at) : null,
+  };
+}
+
+async function currentCreator(env: Env, userId: string) {
+  return env.DB!.prepare("SELECT * FROM creator_profiles WHERE user_id = ? LIMIT 1").bind(userId).first();
+}
+
+async function handleCreatorProfile(request: Request, env: Env) {
+  const user = await authenticatedUser(request, env);
+  if (!user) return authError(request, env, 401, "UNAUTHENTICATED", "Authentication required");
+  const existing = await currentCreator(env, String(user.id));
+  if (request.method === "GET") {
+    return existing
+      ? privateResponse(request, env, { profile: mapCreatorProfile(existing) })
+      : authError(request, env, 404, "NOT_FOUND", "Creator profile not found");
+  }
+  if (request.method !== "POST" && request.method !== "PATCH") return authError(request, env, 404, "NOT_FOUND", "Not found");
+  if (request.method === "POST" && existing) return authError(request, env, 409, "PROFILE_EXISTS", "Creator profile already exists");
+  if (request.method === "PATCH" && !existing) return authError(request, env, 404, "NOT_FOUND", "Creator profile not found");
+  const body = await requestBody(request);
+  const displayName = typeof body?.displayName === "string" ? body.displayName.trim() : String(existing?.display_name ?? "");
+  const slug = body?.slug !== undefined ? normalizedSlug(body.slug) : String(existing?.slug ?? "");
+  const headline = typeof body?.headline === "string" ? body.headline.trim() : String(existing?.headline ?? "");
+  const bio = typeof body?.bio === "string" ? body.bio.trim() : String(existing?.bio ?? "");
+  const avatarUrl = body?.avatarUrl !== undefined ? optionalUrl(body.avatarUrl) : existing?.avatar_url ?? null;
+  const coverUrl = body?.coverUrl !== undefined ? optionalUrl(body.coverUrl) : existing?.cover_url ?? null;
+  const websiteUrl = body?.websiteUrl !== undefined ? optionalUrl(body.websiteUrl) : existing?.website_url ?? null;
+  const githubUrl = body?.githubUrl !== undefined ? optionalUrl(body.githubUrl) : existing?.github_url ?? null;
+  const location = body?.location !== undefined && typeof body.location === "string" ? body.location.trim() : existing?.location ?? null;
+  if (!isValidSlug(slug) || RESERVED_SLUGS.has(slug) || displayName.length < 2 || displayName.length > 80 || headline.length < 2 || headline.length > 120 || bio.length < 10 || bio.length > 2000 || [avatarUrl, coverUrl, websiteUrl, githubUrl].includes(undefined) || String(location ?? "").length > 120) {
+    return authError(request, env, 400, "INVALID_INPUT", "Invalid creator profile");
+  }
+  const conflict = await env.DB!.prepare("SELECT id FROM creator_profiles WHERE slug = ? AND user_id <> ? LIMIT 1").bind(slug, user.id).first();
+  if (conflict) return authError(request, env, 409, "SLUG_EXISTS", "Creator slug already exists");
+  const now = new Date().toISOString();
+  if (existing) {
+    await env.DB!.prepare("UPDATE creator_profiles SET slug=?, display_name=?, headline=?, bio=?, avatar_url=?, cover_url=?, website_url=?, github_url=?, location=?, updated_at=? WHERE user_id=?")
+      .bind(slug, displayName, headline, bio, avatarUrl, coverUrl, websiteUrl, githubUrl, location, now, user.id).run();
+  } else {
+    await env.DB!.prepare("INSERT INTO creator_profiles (id,user_id,slug,display_name,headline,bio,avatar_url,cover_url,website_url,github_url,location,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,'active',?,?)")
+      .bind(crypto.randomUUID(), user.id, slug, displayName, headline, bio, avatarUrl, coverUrl, websiteUrl, githubUrl, location, now, now).run();
+    await env.DB!.prepare("UPDATE users SET role='creator', updated_at=? WHERE id=?").bind(now, user.id).run();
+  }
+  const profile = await currentCreator(env, String(user.id));
+  return privateResponse(request, env, { profile: mapCreatorProfile(profile!) }, existing ? 200 : 201);
+}
+
+type ProductInput = { categoryId: string; name: string; slug: string; shortDescription: string; description: string; productType: string; priceCents: number; currency: string; thumbnailUrl: string | null; gallery: string[]; version: string; demoUrl: string | null; repositoryUrl: string | null; documentationUrl: string | null };
+function productInput(body: Record<string, unknown> | null, existing?: Record<string, unknown> | null): ProductInput | null {
+  const value = (camel: string, snake: string) => body?.[camel] !== undefined ? body[camel] : existing?.[snake];
+  const urls = [optionalUrl(value("thumbnailUrl", "thumbnail_url")), optionalUrl(value("demoUrl", "demo_url")), optionalUrl(value("repositoryUrl", "repository_url")), optionalUrl(value("documentationUrl", "documentation_url"))];
+  const galleryValue = body?.gallery !== undefined ? body.gallery : existing?.gallery;
+  let gallery: unknown = galleryValue;
+  if (typeof galleryValue === "string") { try { gallery = JSON.parse(galleryValue); } catch { return null; } }
+  const result = {
+    categoryId: String(value("categoryId", "category_id") ?? ""), name: String(value("name", "name") ?? "").trim(),
+    slug: normalizedSlug(value("slug", "slug")), shortDescription: String(value("shortDescription", "short_description") ?? "").trim(),
+    description: String(value("description", "description") ?? "").trim(), productType: String(value("productType", "product_type") ?? ""),
+    priceCents: Number(value("priceCents", "price_cents")), currency: String(value("currency", "currency") ?? "USD").toUpperCase(),
+    thumbnailUrl: urls[0] as string | null, gallery: Array.isArray(gallery) ? gallery.filter((item): item is string => typeof item === "string" && optionalUrl(item) !== undefined).slice(0, 12) : [],
+    version: String(value("version", "version") ?? "1.0.0").trim(), demoUrl: urls[1] as string | null,
+    repositoryUrl: urls[2] as string | null, documentationUrl: urls[3] as string | null,
+  };
+  if (!isValidSlug(result.slug) || RESERVED_SLUGS.has(result.slug) || result.name.length < 2 || result.name.length > 120 || result.shortDescription.length > 240 || result.description.length > 20000 || !PRODUCT_TYPES.has(result.productType) || !Number.isInteger(result.priceCents) || result.priceCents < 0 || result.priceCents > 100_000_000 || result.currency !== "USD" || urls.includes(undefined) || result.version.length < 1 || result.version.length > 40) return null;
+  return result;
+}
+
+async function handleCreatorProducts(request: Request, env: Env, pathname: string) {
+  const user = await authenticatedUser(request, env);
+  if (!user) return authError(request, env, 401, "UNAUTHENTICATED", "Authentication required");
+  const creator = await currentCreator(env, String(user.id));
+  if (!creator || creator.status !== "active") return authError(request, env, 403, "CREATOR_REQUIRED", "Active creator profile required");
+  const suffix = pathname.replace("/api/v1/creator/products", "").replace(/^\//, "");
+  const [id, action] = suffix.split("/");
+  if (!id && request.method === "GET") {
+    const result = await env.DB!.prepare("SELECT * FROM creator_products WHERE creator_id=? ORDER BY updated_at DESC").bind(creator.id).all();
+    return privateResponse(request, env, { products: (result.results ?? []).map(mapCreatorProduct) });
+  }
+  if (!id && request.method === "POST") {
+    const input = productInput(await requestBody(request));
+    if (!input) return authError(request, env, 400, "INVALID_INPUT", "Invalid product data");
+    const category = await env.DB!.prepare("SELECT slug FROM categories WHERE slug=? LIMIT 1").bind(input.categoryId).first();
+    if (!category) return authError(request, env, 400, "INVALID_CATEGORY", "Invalid category");
+    const conflict = await env.DB!.prepare("SELECT id FROM creator_products WHERE slug=? LIMIT 1").bind(input.slug).first();
+    if (conflict) return authError(request, env, 409, "SLUG_EXISTS", "Product slug already exists");
+    const now = new Date().toISOString(); const productId = crypto.randomUUID();
+    await env.DB!.prepare("INSERT INTO creator_products (id,creator_id,category_id,name,slug,short_description,description,product_type,price_cents,currency,thumbnail_url,gallery,status,version,demo_url,repository_url,documentation_url,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?, 'draft',?,?,?,?,?,?)")
+      .bind(productId, creator.id, input.categoryId, input.name, input.slug, input.shortDescription, input.description, input.productType, input.priceCents, input.currency, input.thumbnailUrl, JSON.stringify(input.gallery), input.version, input.demoUrl, input.repositoryUrl, input.documentationUrl, now, now).run();
+    const product = await env.DB!.prepare("SELECT * FROM creator_products WHERE id=?").bind(productId).first();
+    return privateResponse(request, env, { product: mapCreatorProduct(product!) }, 201);
+  }
+  if (!id || !/^[0-9a-f-]{36}$/.test(id)) return authError(request, env, 404, "NOT_FOUND", "Product not found");
+  const product = await env.DB!.prepare("SELECT * FROM creator_products WHERE id=? LIMIT 1").bind(id).first();
+  if (!product) return authError(request, env, 404, "NOT_FOUND", "Product not found");
+  if (product.creator_id !== creator.id) return authError(request, env, 403, "FORBIDDEN", "Not allowed");
+  if (!action && request.method === "GET") return privateResponse(request, env, { product: mapCreatorProduct(product) });
+  if (!action && request.method === "PATCH") {
+    const input = productInput(await requestBody(request), product);
+    if (!input) return authError(request, env, 400, "INVALID_INPUT", "Invalid product data");
+    const conflict = await env.DB!.prepare("SELECT id FROM creator_products WHERE slug=? AND id<>? LIMIT 1").bind(input.slug, id).first();
+    if (conflict) return authError(request, env, 409, "SLUG_EXISTS", "Product slug already exists");
+    const category = await env.DB!.prepare("SELECT slug FROM categories WHERE slug=? LIMIT 1").bind(input.categoryId).first();
+    if (!category) return authError(request, env, 400, "INVALID_CATEGORY", "Invalid category");
+    await env.DB!.prepare("UPDATE creator_products SET category_id=?,name=?,slug=?,short_description=?,description=?,product_type=?,price_cents=?,currency=?,thumbnail_url=?,gallery=?,version=?,demo_url=?,repository_url=?,documentation_url=?,updated_at=? WHERE id=?")
+      .bind(input.categoryId,input.name,input.slug,input.shortDescription,input.description,input.productType,input.priceCents,input.currency,input.thumbnailUrl,JSON.stringify(input.gallery),input.version,input.demoUrl,input.repositoryUrl,input.documentationUrl,new Date().toISOString(),id).run();
+    const updated = await env.DB!.prepare("SELECT * FROM creator_products WHERE id=?").bind(id).first();
+    return privateResponse(request, env, { product: mapCreatorProduct(updated!) });
+  }
+  if (!action && request.method === "DELETE") {
+    await env.DB!.prepare("DELETE FROM creator_products WHERE id=? AND creator_id=?").bind(id, creator.id).run();
+    const headers = new Headers({ "cache-control": "no-store", vary: "Origin" }); const origin = allowedOrigin(request, env);
+    if (origin) { headers.set("access-control-allow-origin", origin); headers.set("access-control-allow-credentials", "true"); }
+    return new Response(null, { status: 204, headers });
+  }
+  if ((action === "publish" || action === "unpublish") && request.method === "POST") {
+    if (action === "publish" && (!product.name || !product.short_description || !product.description || !product.category_id || !PRODUCT_TYPES.has(String(product.product_type)))) return authError(request, env, 400, "INCOMPLETE_PRODUCT", "Complete required fields before publishing");
+    const now = new Date().toISOString(); const status = action === "publish" ? "published" : "unpublished";
+    await env.DB!.prepare("UPDATE creator_products SET status=?, published_at=?, updated_at=? WHERE id=?")
+      .bind(status, action === "publish" ? now : null, now, id).run();
+    const updated = await env.DB!.prepare("SELECT * FROM creator_products WHERE id=?").bind(id).first();
+    return privateResponse(request, env, { product: mapCreatorProduct(updated!) });
+  }
+  return authError(request, env, 404, "NOT_FOUND", "Not found");
+}
+
 function isValidSlug(value: string): boolean {
   return value.length > 0 && value.length <= 80 && SLUG_PATTERN.test(value);
 }
 
 function mapProduct(row: Record<string, unknown>) {
+  const modern = row.price_cents !== undefined;
+  const price = modern ? toNumber(row.price_cents) / 100 : toNumber(row.price);
   return {
     id: String(row.id ?? ""),
     slug: String(row.slug ?? ""),
@@ -465,9 +652,16 @@ function mapProduct(row: Record<string, unknown>) {
     subcategories: [String(row.category ?? "")],
     tags: toStringArray(row.tech),
     tech: toStringArray(row.tech),
-    price: toNumber(row.price),
-    license: toNumber(row.price) === 0 ? ["MIT"] : ["Personal", "Commercial", "Enterprise"],
-    free: toBoolean(row.free),
+    price,
+    priceCents: modern ? toNumber(row.price_cents) : Math.round(toNumber(row.price) * 100),
+    productType: String(row.product_type ?? "other"),
+    thumbnailUrl: row.thumbnail_url ? String(row.thumbnail_url) : undefined,
+    demoUrl: row.demo_url ? String(row.demo_url) : undefined,
+    repositoryUrl: row.repository_url ? String(row.repository_url) : undefined,
+    documentationUrl: row.documentation_url ? String(row.documentation_url) : undefined,
+    status: String(row.status ?? "published"),
+    license: price === 0 ? ["Free"] : ["Commercial"],
+    free: modern ? price === 0 : toBoolean(row.free),
     openSource: toBoolean(row.open_source),
     premium: toBoolean(row.premium),
     enterprise: toBoolean(row.enterprise),
@@ -478,9 +672,11 @@ function mapProduct(row: Record<string, unknown>) {
     views: toNumber(row.views),
     bookmarks: Math.max(0, Math.floor(toNumber(row.sales) * 0.4)),
     version: String(row.version ?? "1.0.0"),
-    updatedAt: String(row.created_at ?? ""),
+    updatedAt: String(row.updated_at ?? row.created_at ?? ""),
     createdAt: String(row.created_at ?? ""),
     creator: String(row.creator ?? ""),
+    creatorName: row.creator_name ? String(row.creator_name) : undefined,
+    creatorAvatar: row.creator_avatar ? String(row.creator_avatar) : undefined,
     featured: false,
     trending: toBoolean(row.trending),
     new: toBoolean(row.new),
@@ -490,11 +686,12 @@ function mapProduct(row: Record<string, unknown>) {
 }
 
 function mapCreator(row: Record<string, unknown>) {
+  const name = String(row.name ?? "");
   return {
     id: String(row.id ?? ""),
     handle: String(row.handle ?? ""),
-    name: String(row.name ?? ""),
-    avatar: String(row.avatar ?? ""),
+    name,
+    avatar: row.avatar_url ? String(row.avatar_url) : name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
     verified: toBoolean(row.verified),
     followers: toNumber(row.followers),
     sales: toNumber(row.sales),
@@ -531,33 +728,33 @@ async function listProducts(env: Env, url: URL) {
   }
 
   const orderBy: Record<string, string> = {
-    popular: "sales DESC, id ASC",
-    new: "created_at DESC, id ASC",
-    rating: "rating DESC, id ASC",
-    "price-asc": "price ASC, id ASC",
-    "price-desc": "price DESC, id ASC",
+    popular: "creator_products.published_at DESC, creator_products.id ASC",
+    new: "creator_products.created_at DESC, creator_products.id ASC",
+    rating: "creator_products.published_at DESC, creator_products.id ASC",
+    "price-asc": "creator_products.price_cents ASC, creator_products.id ASC",
+    "price-desc": "creator_products.price_cents DESC, creator_products.id ASC",
   };
   if (!orderBy[sort]) return errorResponse(400, "INVALID_SORT", "Invalid sort option");
 
-  const conditions = ["datetime(created_at) <= datetime('now')"];
+  const conditions = ["creator_products.status = 'published'", "datetime(creator_products.published_at) <= datetime('now')"];
   const values: unknown[] = [];
   if (q) {
-    conditions.push("(name LIKE ? ESCAPE '\\' OR tagline LIKE ? ESCAPE '\\' OR description LIKE ? ESCAPE '\\' OR tech LIKE ? ESCAPE '\\')");
+    conditions.push("(creator_products.name LIKE ? ESCAPE '\\' OR creator_products.short_description LIKE ? ESCAPE '\\' OR creator_products.description LIKE ? ESCAPE '\\')");
     const escaped = q.replace(/[\\%_]/g, "\\$&");
-    values.push(`%${escaped}%`, `%${escaped}%`, `%${escaped}%`, `%${escaped}%`);
+    values.push(`%${escaped}%`, `%${escaped}%`, `%${escaped}%`);
   }
   if (categories.length) {
-    conditions.push(`category IN (${categories.map(() => "?").join(", ")})`);
+    conditions.push(`creator_products.category_id IN (${categories.map(() => "?").join(", ")})`);
     values.push(...categories);
   }
   if (creator) {
-    conditions.push("creator = ?");
+    conditions.push("creator_products.creator_id = ?");
     values.push(creator);
   }
   values.push(limit);
 
   const statement = env.DB.prepare(
-    `${PRODUCT_SELECT} WHERE ${conditions.join(" AND ")} ORDER BY ${orderBy[sort]} LIMIT ?`,
+    `${CREATOR_PRODUCT_SELECT} WHERE ${conditions.join(" AND ")} ORDER BY ${orderBy[sort]} LIMIT ?`,
   );
   const result = await statement.bind(...values).all();
   return (result.results ?? []).map(mapProduct);
@@ -566,7 +763,7 @@ async function listProducts(env: Env, url: URL) {
 async function findProduct(env: Env, slug: string) {
   if (!env.DB) return null;
   const row = await env.DB
-    .prepare(`${PRODUCT_SELECT} WHERE slug = ? AND datetime(created_at) <= datetime('now') LIMIT 1`)
+    .prepare(`${CREATOR_PRODUCT_SELECT} WHERE creator_products.slug = ? AND creator_products.status = 'published' LIMIT 1`)
     .bind(slug)
     .first();
   return row ? mapProduct(row) : null;
@@ -576,7 +773,11 @@ async function findCreator(env: Env, slug: string) {
   if (!env.DB) return null;
   const row = await env.DB
     .prepare(
-      "SELECT id, handle, name, avatar, verified, followers, sales, rating, bio, location, joined, organization FROM creators WHERE handle = ? OR id = ? LIMIT 1",
+      `SELECT id, slug AS handle, display_name AS name, display_name AS avatar,
+        0 AS verified, 0 AS followers, 0 AS sales, 0 AS rating, bio,
+        COALESCE(location, '') AS location, created_at AS joined,
+        headline AS organization, headline, avatar_url, cover_url, website_url, github_url
+       FROM creator_profiles WHERE status = 'active' AND (slug = ? OR id = ?) LIMIT 1`,
     )
     .bind(slug, slug)
     .first();
@@ -586,9 +787,9 @@ async function findCreator(env: Env, slug: string) {
 async function readCatalogFromD1(env: Env) {
   if (!env.DB) return null;
   try {
-    const categoriesResult = await env.DB.prepare("SELECT slug, name, count, group_name FROM categories").all();
-    const productsResult = await env.DB.prepare("SELECT * FROM products").all();
-    const creatorsResult = await env.DB.prepare("SELECT * FROM creators").all();
+    const categoriesResult = await env.DB.prepare("SELECT categories.slug, categories.name, categories.group_name, COUNT(creator_products.id) AS count FROM categories LEFT JOIN creator_products ON creator_products.category_id = categories.slug AND creator_products.status = 'published' GROUP BY categories.slug, categories.name, categories.group_name").all();
+    const productsResult = await env.DB.prepare(`${CREATOR_PRODUCT_SELECT} WHERE creator_products.status = 'published'`).all();
+    const creatorsResult = await env.DB.prepare(`SELECT id, slug AS handle, display_name AS name, display_name AS avatar, 0 AS verified, 0 AS followers, 0 AS sales, 0 AS rating, bio, COALESCE(location, '') AS location, created_at AS joined, headline AS organization FROM creator_profiles WHERE status = 'active'`).all();
 
     const categories = (categoriesResult.results ?? []).map((row) => ({
       slug: String(row.slug ?? ""),
@@ -617,7 +818,7 @@ export default {
         status: 204,
         headers: {
           "access-control-allow-headers": "Content-Type",
-          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "access-control-allow-methods": "GET, POST, PATCH, DELETE, OPTIONS",
           "access-control-allow-origin": origin,
           "access-control-allow-credentials": "true",
           "access-control-max-age": "86400",
@@ -632,6 +833,24 @@ export default {
       } catch (error) {
         console.error("Authentication request failed", error instanceof Error ? error.message : "Unknown error");
         return authError(request, env, 500, "INTERNAL_ERROR", "Unable to process authentication");
+      }
+    }
+
+    if (url.pathname === "/api/v1/creator/profile") {
+      try {
+        return await handleCreatorProfile(request, env);
+      } catch (error) {
+        console.error("Creator profile request failed", error instanceof Error ? error.message : "Unknown error");
+        return authError(request, env, 500, "INTERNAL_ERROR", "Unable to process creator profile");
+      }
+    }
+
+    if (url.pathname === "/api/v1/creator/products" || url.pathname.startsWith("/api/v1/creator/products/")) {
+      try {
+        return await handleCreatorProducts(request, env, url.pathname);
+      } catch (error) {
+        console.error("Creator product request failed", error instanceof Error ? error.message : "Unknown error");
+        return authError(request, env, 500, "INTERNAL_ERROR", "Unable to process creator product");
       }
     }
 
