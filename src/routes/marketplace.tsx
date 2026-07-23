@@ -85,7 +85,7 @@ function MarketplacePage() {
     if (sort === "price-asc") list.sort((a, b) => a.price - b.price);
     if (sort === "price-desc") list.sort((a, b) => b.price - a.price);
     return list;
-  }, [q, sort, priceMax, selected, filters]);
+  }, [products, q, sort, priceMax, selected, filters]);
 
   const toggleCat = (slug: string) =>
     setSelected((s) => (s.includes(slug) ? s.filter((c) => c !== slug) : [...s, slug]));
