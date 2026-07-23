@@ -7,7 +7,6 @@ import {
   MessageSquare,
   Star,
   FileText,
-  Wallet,
   Settings,
   ShieldCheck,
   Bell,
@@ -17,22 +16,7 @@ import type { SideNavItem } from "./side-nav";
 
 export const creatorNav: SideNavItem[] = [
   { label: "Overview", to: "/creator", icon: <LayoutDashboard />, group: "Workspace" },
-  { label: "Products", to: "/creator/products", icon: <Package />, badge: 12, group: "Workspace" },
-  { label: "Analytics", to: "/creator/analytics", icon: <BarChart3 />, group: "Workspace" },
-  { label: "Revenue", to: "/creator/revenue", icon: <DollarSign />, group: "Workspace" },
-  { label: "Customers", to: "/creator/customers", icon: <Users />, group: "Workspace" },
-  {
-    label: "Messages",
-    to: "/creator/messages",
-    icon: <MessageSquare />,
-    badge: 3,
-    group: "Workspace",
-  },
-  { label: "Reviews", to: "/creator/reviews", icon: <Star />, group: "Workspace" },
-  { label: "Subscriptions", to: "/creator/subscriptions", icon: <FileText />, group: "Money" },
-  { label: "Licenses", to: "/creator/licenses", icon: <ShieldCheck />, group: "Money" },
-  { label: "Withdrawals", to: "/creator/withdrawals", icon: <Wallet />, group: "Money" },
-  { label: "Achievements", to: "/creator/achievements", icon: <Award />, group: "Profile" },
+  { label: "Products", to: "/creator/products", icon: <Package />, group: "Workspace" },
   { label: "Settings", to: "/settings", icon: <Settings />, group: "Profile" },
 ];
 

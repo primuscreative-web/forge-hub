@@ -12,7 +12,6 @@ import {
   Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -98,7 +97,7 @@ export function SiteHeader() {
             className="hidden md:flex items-center gap-2 h-9 w-72 rounded-lg border border-border/60 bg-surface-1/60 px-3 text-sm text-muted-foreground hover:border-primary/40 transition-colors"
           >
             <Search className="size-4" />
-            <span className="flex-1 text-left">Search 12,480 products…</span>
+            <span className="flex-1 text-left">Search products…</span>
             <kbd className="flex items-center gap-0.5 rounded border border-border/60 bg-background/50 px-1.5 py-0.5 text-[10px] font-mono">
               <Command className="size-3" />K
             </kbd>
@@ -141,38 +140,12 @@ function NotificationsMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
           <Bell className="size-5" />
-          <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand-pink animate-pulse-glow" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          Notifications{" "}
-          <Badge variant="secondary" className="text-[10px]">
-            3 new
-          </Badge>
-        </DropdownMenuLabel>
+        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {[
-          { t: "New sale on Nexus Dashboard Pro", s: "$149 · 2m ago", u: true },
-          { t: "AuthForge got a 5-star review", s: "18m ago", u: true },
-          { t: "Kaito Rivera followed you", s: "1h ago", u: true },
-        ].map((n, i) => (
-          <DropdownMenuItem key={i} asChild>
-            <Link to="/dashboard/notifications" className="flex items-start gap-3 py-2.5">
-              {n.u && <span className="mt-1.5 size-1.5 rounded-full bg-brand-purple" />}
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{n.t}</div>
-                <div className="text-xs text-muted-foreground">{n.s}</div>
-              </div>
-            </Link>
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/dashboard/notifications" className="justify-center text-sm">
-            View all notifications
-          </Link>
-        </DropdownMenuItem>
+        <DropdownMenuItem disabled>No notifications yet</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
