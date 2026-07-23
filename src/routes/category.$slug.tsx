@@ -15,7 +15,10 @@ export const Route = createFileRoute("/category/$slug")({
     return {
       meta: [
         { title: `${name} — DevForge Hub` },
-        { name: "description", content: `Browse ${name} products on DevForge Hub. Discover the best tools built by top creators.` },
+        {
+          name: "description",
+          content: `Browse ${name} products on DevForge Hub. Discover the best tools built by top creators.`,
+        },
         { property: "og:title", content: `${name} — DevForge Hub` },
         { property: "og:description", content: `Browse ${name} products on DevForge Hub.` },
       ],
@@ -27,21 +30,31 @@ export const Route = createFileRoute("/category/$slug")({
 function CategoryPage() {
   const { category } = Route.useLoaderData();
   const items = products.filter((p) => p.category === category.slug);
-  const related = categories.filter((c) => c.group === category.group && c.slug !== category.slug).slice(0, 8);
+  const related = categories
+    .filter((c) => c.group === category.group && c.slug !== category.slug)
+    .slice(0, 8);
 
   return (
     <SiteLayout>
       <div className="mx-auto max-w-[1440px] px-4 md:px-6 py-10">
         <div className="text-xs text-muted-foreground mb-3">
-          <Link to="/categories" className="hover:text-foreground">Categories</Link> / <span className="text-foreground">{category.name}</span>
+          <Link to="/categories" className="hover:text-foreground">
+            Categories
+          </Link>{" "}
+          / <span className="text-foreground">{category.name}</span>
         </div>
-        <PageHeader title={category.name} description={`${category.count.toLocaleString()} products in ${category.group}`} />
+        <PageHeader
+          title={category.name}
+          description={`${category.count.toLocaleString()} products in ${category.group}`}
+        />
 
         {related.length > 0 && (
           <div className="mb-8 flex flex-wrap gap-1.5">
             {related.map((r) => (
               <Link key={r.slug} to="/category/$slug" params={{ slug: r.slug }}>
-                <Badge variant="outline" className="hover:border-primary/40 cursor-pointer">{r.name}</Badge>
+                <Badge variant="outline" className="hover:border-primary/40 cursor-pointer">
+                  {r.name}
+                </Badge>
               </Link>
             ))}
           </div>
@@ -49,12 +62,19 @@ function CategoryPage() {
 
         {items.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {items.map((p) => <ProductCard key={p.id} product={p} />)}
+            {items.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
           </div>
         ) : (
           <div className="card-elegant rounded-xl p-16 text-center">
             <div className="text-lg font-medium">No products in this category yet</div>
-            <p className="text-sm text-muted-foreground mt-1">Be the first to publish. <Link to="/publish" className="text-primary hover:underline">Publish a product →</Link></p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Be the first to publish.{" "}
+              <Link to="/publish" className="text-primary hover:underline">
+                Publish a product →
+              </Link>
+            </p>
           </div>
         )}
       </div>

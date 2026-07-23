@@ -58,21 +58,47 @@ export function SiteFooter() {
               <span className="text-sm font-semibold">DevForge Hub</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
-              The world's most complete marketplace for developers. Ship faster with production-ready tools.
+              The world's most complete marketplace for developers. Ship faster with
+              production-ready tools.
             </p>
             <div className="flex items-center gap-2">
-              <a href="#" aria-label="GitHub" className="rounded-md p-2 hover:bg-accent text-muted-foreground hover:text-foreground"><Github className="size-4" /></a>
-              <a href="#" aria-label="Twitter" className="rounded-md p-2 hover:bg-accent text-muted-foreground hover:text-foreground"><Twitter className="size-4" /></a>
-              <a href="#" aria-label="YouTube" className="rounded-md p-2 hover:bg-accent text-muted-foreground hover:text-foreground"><Youtube className="size-4" /></a>
+              <a
+                href="#"
+                aria-label="GitHub"
+                className="rounded-md p-2 hover:bg-accent text-muted-foreground hover:text-foreground"
+              >
+                <Github className="size-4" />
+              </a>
+              <a
+                href="#"
+                aria-label="Twitter"
+                className="rounded-md p-2 hover:bg-accent text-muted-foreground hover:text-foreground"
+              >
+                <Twitter className="size-4" />
+              </a>
+              <a
+                href="#"
+                aria-label="YouTube"
+                className="rounded-md p-2 hover:bg-accent text-muted-foreground hover:text-foreground"
+              >
+                <Youtube className="size-4" />
+              </a>
             </div>
           </div>
           {groups.map((g) => (
             <div key={g.title}>
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{g.title}</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+                {g.title}
+              </h4>
               <ul className="space-y-2.5">
                 {g.links.map((l) => (
                   <li key={l.label}>
-                    <Link to={l.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{l.label}</Link>
+                    <Link
+                      to={l.to}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {l.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -80,12 +106,22 @@ export function SiteFooter() {
           ))}
         </div>
         <div className="mt-12 pt-6 border-t border-border/60 flex flex-wrap items-center justify-between gap-4">
-          <div className="text-xs text-muted-foreground">© 2026 DevForge Hub, Inc. All rights reserved.</div>
+          <div className="text-xs text-muted-foreground">
+            © 2026 DevForge Hub, Inc. All rights reserved.
+          </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <a href="#" className="hover:text-foreground">Privacy</a>
-            <a href="#" className="hover:text-foreground">Terms</a>
-            <a href="#" className="hover:text-foreground">Cookies</a>
-            <a href="#" className="hover:text-foreground">Security</a>
+            <Link to="/about" className="hover:text-foreground">
+              Privacy
+            </Link>
+            <Link to="/about" className="hover:text-foreground">
+              Terms
+            </Link>
+            <Link to="/about" className="hover:text-foreground">
+              Cookies
+            </Link>
+            <Link to="/about" className="hover:text-foreground">
+              Security
+            </Link>
           </div>
         </div>
       </div>

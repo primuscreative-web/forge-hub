@@ -7,16 +7,25 @@ import { Progress } from "@/components/ui/progress";
 import { Award, TrendingUp, Star, Users, DollarSign, ShieldCheck, Trophy, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/creator/achievements")({
-  head: () => ({ meta: [
-    { title: "Achievements — Creator — DevForge Hub" },
-    { name: "description", content: "Track your creator milestones, ranking, and unlock new perks." },
-    { property: "og:title", content: "Achievements — Creator — DevForge Hub" },
-    { property: "og:description", content: "Track your creator milestones on DevForge Hub." },
-  ]}),
+  head: () => ({
+    meta: [
+      { title: "Achievements — Creator — DevForge Hub" },
+      {
+        name: "description",
+        content: "Track your creator milestones, ranking, and unlock new perks.",
+      },
+      { property: "og:title", content: "Achievements — Creator — DevForge Hub" },
+      { property: "og:description", content: "Track your creator milestones on DevForge Hub." },
+    ],
+  }),
   component: () => {
     const unlocked = [
       { icon: Trophy, name: "Top 1% Seller", desc: "You're in the top 1% of creators by revenue." },
-      { icon: ShieldCheck, name: "Verified Creator", desc: "Your identity and payouts are verified." },
+      {
+        icon: ShieldCheck,
+        name: "Verified Creator",
+        desc: "Your identity and payouts are verified.",
+      },
       { icon: Star, name: "5-Star Streak", desc: "50 five-star reviews in a row." },
       { icon: DollarSign, name: "$100k Earned", desc: "You've earned over $100,000 lifetime." },
       { icon: Users, name: "10k Followers", desc: "10,000+ developers follow you." },
@@ -24,7 +33,12 @@ export const Route = createFileRoute("/creator/achievements")({
     ];
     const locked = [
       { icon: Award, name: "1M Downloads", desc: "1,000,000 lifetime downloads.", progress: 84 },
-      { icon: TrendingUp, name: "Enterprise Elite", desc: "50 enterprise licenses sold.", progress: 60 },
+      {
+        icon: TrendingUp,
+        name: "Enterprise Elite",
+        desc: "50 enterprise licenses sold.",
+        progress: 60,
+      },
     ];
     return (
       <DashboardLayout side={<SideNav items={creatorNav} title="Creator" />}>
@@ -36,28 +50,39 @@ export const Route = createFileRoute("/creator/achievements")({
             </div>
             <div className="flex-1">
               <div className="text-xs uppercase tracking-widest text-muted-foreground">Ranking</div>
-              <div className="text-3xl font-semibold">#12 <span className="text-sm text-muted-foreground font-normal">of 3,240 creators</span></div>
+              <div className="text-3xl font-semibold">
+                #12{" "}
+                <span className="text-sm text-muted-foreground font-normal">of 3,240 creators</span>
+              </div>
               <div className="text-sm text-success mt-1">↑ Up 4 spots this month</div>
             </div>
           </div>
 
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">Unlocked · 24</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+            Unlocked · 24
+          </h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
             {unlocked.map((a) => (
               <div key={a.name} className="card-elegant rounded-2xl p-5">
-                <div className="size-10 rounded-xl gradient-brand-soft grid place-items-center mb-3"><a.icon className="size-5 text-primary" /></div>
+                <div className="size-10 rounded-xl gradient-brand-soft grid place-items-center mb-3">
+                  <a.icon className="size-5 text-primary" />
+                </div>
                 <div className="text-sm font-medium">{a.name}</div>
                 <div className="text-xs text-muted-foreground mt-1">{a.desc}</div>
               </div>
             ))}
           </div>
 
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">In progress</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+            In progress
+          </h3>
           <div className="grid gap-4 sm:grid-cols-2">
             {locked.map((a) => (
               <div key={a.name} className="card-elegant rounded-2xl p-5">
                 <div className="flex items-start gap-3">
-                  <div className="size-10 rounded-xl bg-surface-2 grid place-items-center"><a.icon className="size-5 text-muted-foreground" /></div>
+                  <div className="size-10 rounded-xl bg-surface-2 grid place-items-center">
+                    <a.icon className="size-5 text-muted-foreground" />
+                  </div>
                   <div className="flex-1">
                     <div className="text-sm font-medium">{a.name}</div>
                     <div className="text-xs text-muted-foreground">{a.desc}</div>

@@ -1,8 +1,26 @@
 import { Link } from "@tanstack/react-router";
-import { Search, Bell, ShoppingBag, Menu, Command, Sparkles, LayoutDashboard, Package, Users, Upload } from "lucide-react";
+import {
+  Search,
+  Bell,
+  ShoppingBag,
+  Menu,
+  Command,
+  Sparkles,
+  LayoutDashboard,
+  Package,
+  Users,
+  Upload,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
@@ -33,7 +51,13 @@ export function SiteHeader() {
             <SheetContent side="left" className="w-72">
               <nav className="mt-8 flex flex-col gap-1">
                 {nav.map((n) => (
-                  <Link key={n.to} to={n.to} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent">{n.label}</Link>
+                  <Link
+                    key={n.to}
+                    to={n.to}
+                    className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
+                  >
+                    {n.label}
+                  </Link>
                 ))}
               </nav>
             </SheetContent>
@@ -45,7 +69,9 @@ export function SiteHeader() {
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-sm font-semibold tracking-tight">DevForge</span>
-              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Hub</span>
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                Hub
+              </span>
             </div>
           </Link>
 
@@ -55,7 +81,9 @@ export function SiteHeader() {
                 key={n.to}
                 to={n.to}
                 className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                activeProps={{ className: "rounded-md px-3 py-1.5 text-sm text-foreground bg-accent" }}
+                activeProps={{
+                  className: "rounded-md px-3 py-1.5 text-sm text-foreground bg-accent",
+                }}
               >
                 {n.label}
               </Link>
@@ -75,12 +103,25 @@ export function SiteHeader() {
             </kbd>
           </button>
 
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setCmdkOpen(true)} aria-label="Search">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setCmdkOpen(true)}
+            aria-label="Search"
+          >
             <Search className="size-5" />
           </Button>
 
-          <Button asChild size="sm" className="hidden md:inline-flex gradient-brand text-white hover:opacity-90">
-            <Link to="/publish"><Upload className="size-4 mr-1.5" />Publish</Link>
+          <Button
+            asChild
+            size="sm"
+            className="hidden md:inline-flex gradient-brand text-white hover:opacity-90"
+          >
+            <Link to="/publish">
+              <Upload className="size-4 mr-1.5" />
+              Publish
+            </Link>
           </Button>
 
           <NotificationsMenu />
@@ -104,7 +145,10 @@ function NotificationsMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center justify-between">
-          Notifications <Badge variant="secondary" className="text-[10px]">3 new</Badge>
+          Notifications{" "}
+          <Badge variant="secondary" className="text-[10px]">
+            3 new
+          </Badge>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {[
@@ -124,7 +168,9 @@ function NotificationsMenu() {
         ))}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link to="/dashboard/notifications" className="justify-center text-sm">View all notifications</Link>
+          <Link to="/dashboard/notifications" className="justify-center text-sm">
+            View all notifications
+          </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -137,7 +183,9 @@ function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 ring-primary ring-offset-2 ring-offset-background">
           <Avatar className="size-8 border border-border/60">
-            <AvatarFallback className="gradient-brand text-white text-xs font-semibold">AL</AvatarFallback>
+            <AvatarFallback className="gradient-brand text-white text-xs font-semibold">
+              AL
+            </AvatarFallback>
           </Avatar>
         </button>
       </DropdownMenuTrigger>
@@ -147,13 +195,37 @@ function UserMenu() {
           <span className="text-xs text-muted-foreground">alex@acme.labs</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild><Link to="/creator" className="flex items-center gap-2"><LayoutDashboard className="size-4" />Creator dashboard</Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/dashboard" className="flex items-center gap-2"><ShoppingBag className="size-4" />My library</Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/creator/products" className="flex items-center gap-2"><Package className="size-4" />My products</Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/admin" className="flex items-center gap-2"><Users className="size-4" />Admin panel</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/creator" className="flex items-center gap-2">
+            <LayoutDashboard className="size-4" />
+            Creator dashboard
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/dashboard" className="flex items-center gap-2">
+            <ShoppingBag className="size-4" />
+            My library
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/creator/products" className="flex items-center gap-2">
+            <Package className="size-4" />
+            My products
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/admin" className="flex items-center gap-2">
+            <Users className="size-4" />
+            Admin panel
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild><Link to="/settings">Settings</Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link to="/auth">Sign out</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/settings">Settings</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/auth">Sign out</Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

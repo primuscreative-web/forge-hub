@@ -10,10 +10,14 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ShieldCheck, Smartphone, KeyRound, Copy, Plus } from "lucide-react";
 
-const m = (t: string, d: string) => ({ meta: [
-  { title: `${t} — Settings — DevForge Hub` }, { name: "description", content: d },
-  { property: "og:title", content: `${t} — Settings` }, { property: "og:description", content: d },
-]});
+const m = (t: string, d: string) => ({
+  meta: [
+    { title: `${t} — Settings — DevForge Hub` },
+    { name: "description", content: d },
+    { property: "og:title", content: `${t} — Settings` },
+    { property: "og:description", content: d },
+  ],
+});
 
 // Appearance
 export const AppearanceRoute = createFileRoute("/settings/appearance")({
@@ -27,9 +31,22 @@ export const AppearanceRoute = createFileRoute("/settings/appearance")({
             <Label className="text-sm mb-3 block">Theme</Label>
             <RadioGroup defaultValue="dark" className="grid grid-cols-3 gap-3">
               {["dark", "light", "system"].map((t) => (
-                <label key={t} className="cursor-pointer rounded-xl border border-border/60 p-4 has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+                <label
+                  key={t}
+                  className="cursor-pointer rounded-xl border border-border/60 p-4 has-[:checked]:border-primary has-[:checked]:bg-primary/10"
+                >
                   <RadioGroupItem value={t} className="sr-only" />
-                  <div className="aspect-video rounded mb-2" style={{ background: t === "dark" ? "oklch(0.15 0.02 265)" : t === "light" ? "#fff" : "linear-gradient(135deg, oklch(0.15 0.02 265) 50%, #fff 50%)" }} />
+                  <div
+                    className="aspect-video rounded mb-2"
+                    style={{
+                      background:
+                        t === "dark"
+                          ? "oklch(0.15 0.02 265)"
+                          : t === "light"
+                            ? "#fff"
+                            : "linear-gradient(135deg, oklch(0.15 0.02 265) 50%, #fff 50%)",
+                    }}
+                  />
                   <div className="text-sm font-medium capitalize">{t}</div>
                 </label>
               ))}

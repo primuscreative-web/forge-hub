@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "devforge-hub-api",
+  "compatibility_date": "2026-07-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./workers/api.ts",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "devforge-hub",
+      "database_id": "bff6c7e0-f593-42e1-a369-dff8d9a8afdf"
+    }
+  ]
+}

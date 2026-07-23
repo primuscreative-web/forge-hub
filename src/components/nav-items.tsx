@@ -1,4 +1,18 @@
-import { LayoutDashboard, Package, BarChart3, DollarSign, Users, MessageSquare, Star, FileText, Wallet, Settings, ShieldCheck, Bell, Award } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  BarChart3,
+  DollarSign,
+  Users,
+  MessageSquare,
+  Star,
+  FileText,
+  Wallet,
+  Settings,
+  ShieldCheck,
+  Bell,
+  Award,
+} from "lucide-react";
 import type { SideNavItem } from "./side-nav";
 
 export const creatorNav: SideNavItem[] = [
@@ -7,7 +21,13 @@ export const creatorNav: SideNavItem[] = [
   { label: "Analytics", to: "/creator/analytics", icon: <BarChart3 />, group: "Workspace" },
   { label: "Revenue", to: "/creator/revenue", icon: <DollarSign />, group: "Workspace" },
   { label: "Customers", to: "/creator/customers", icon: <Users />, group: "Workspace" },
-  { label: "Messages", to: "/creator/messages", icon: <MessageSquare />, badge: 3, group: "Workspace" },
+  {
+    label: "Messages",
+    to: "/creator/messages",
+    icon: <MessageSquare />,
+    badge: 3,
+    group: "Workspace",
+  },
   { label: "Reviews", to: "/creator/reviews", icon: <Star />, group: "Workspace" },
   { label: "Subscriptions", to: "/creator/subscriptions", icon: <FileText />, group: "Money" },
   { label: "Licenses", to: "/creator/licenses", icon: <ShieldCheck />, group: "Money" },
@@ -24,7 +44,13 @@ export const buyerNav: SideNavItem[] = [
   { label: "Collections", to: "/dashboard/collections", icon: <LayoutDashboard />, group: "Shop" },
   { label: "Following", to: "/dashboard/following", icon: <Users />, group: "Social" },
   { label: "Messages", to: "/dashboard/messages", icon: <MessageSquare />, group: "Social" },
-  { label: "Notifications", to: "/dashboard/notifications", icon: <Bell />, badge: 3, group: "Social" },
+  {
+    label: "Notifications",
+    to: "/dashboard/notifications",
+    icon: <Bell />,
+    badge: 3,
+    group: "Social",
+  },
   { label: "Subscriptions", to: "/dashboard/subscriptions", icon: <FileText />, group: "Account" },
   { label: "Licenses", to: "/dashboard/licenses", icon: <ShieldCheck />, group: "Account" },
   { label: "Support", to: "/dashboard/support", icon: <MessageSquare />, group: "Account" },
@@ -43,7 +69,13 @@ export const adminNav: SideNavItem[] = [
   { label: "Revenue", to: "/admin/revenue", icon: <DollarSign />, group: "Commerce" },
   { label: "Subscriptions", to: "/admin/subscriptions", icon: <FileText />, group: "Commerce" },
   { label: "Coupons", to: "/admin/coupons", icon: <FileText />, group: "Commerce" },
-  { label: "Support tickets", to: "/admin/tickets", icon: <MessageSquare />, badge: 24, group: "Support" },
+  {
+    label: "Support tickets",
+    to: "/admin/tickets",
+    icon: <MessageSquare />,
+    badge: 24,
+    group: "Support",
+  },
   { label: "Reports", to: "/admin/reports", icon: <FileText />, badge: 8, group: "Support" },
   { label: "Moderation", to: "/admin/moderation", icon: <ShieldCheck />, group: "Trust & safety" },
   { label: "Audit logs", to: "/admin/audit", icon: <FileText />, group: "Trust & safety" },

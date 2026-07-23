@@ -2,13 +2,35 @@ import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, MoreHorizontal } from "lucide-react";
 
-export type Column<T> = { key: string; header: string; render: (row: T) => ReactNode; className?: string };
+export type Column<T> = {
+  key: string;
+  header: string;
+  render: (row: T) => ReactNode;
+  className?: string;
+};
 
-export function DataTable<T extends { id?: string | number }>({ columns, rows, searchable = true, actions }: { columns: Column<T>[]; rows: T[]; searchable?: boolean; actions?: ReactNode }) {
+export function DataTable<T extends { id?: string | number }>({
+  columns,
+  rows,
+  searchable = true,
+  actions,
+}: {
+  columns: Column<T>[];
+  rows: T[];
+  searchable?: boolean;
+  actions?: ReactNode;
+}) {
   return (
     <div className="card-elegant rounded-2xl overflow-hidden">
       {(searchable || actions) && (
@@ -19,22 +41,37 @@ export function DataTable<T extends { id?: string | number }>({ columns, rows, s
               <Input placeholder="Search..." className="pl-9 h-9 bg-surface-1" />
             </div>
           )}
-          <Button variant="outline" size="sm"><Filter className="size-3.5 mr-1.5" />Filters</Button>
+          <Button variant="outline" size="sm">
+            <Filter className="size-3.5 mr-1.5" />
+            Filters
+          </Button>
           {actions}
         </div>
       )}
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            {columns.map((c) => <TableHead key={c.key} className={c.className}>{c.header}</TableHead>)}
+            {columns.map((c) => (
+              <TableHead key={c.key} className={c.className}>
+                {c.header}
+              </TableHead>
+            ))}
             <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((row, i) => (
             <TableRow key={row.id ?? i}>
-              {columns.map((c) => <TableCell key={c.key} className={c.className}>{c.render(row)}</TableCell>)}
-              <TableCell className="text-right"><Button variant="ghost" size="icon" className="size-8"><MoreHorizontal className="size-4" /></Button></TableCell>
+              {columns.map((c) => (
+                <TableCell key={c.key} className={c.className}>
+                  {c.render(row)}
+                </TableCell>
+              ))}
+              <TableCell className="text-right">
+                <Button variant="ghost" size="icon" className="size-8">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -43,10 +80,20 @@ export function DataTable<T extends { id?: string | number }>({ columns, rows, s
   );
 }
 
-export function UserCell({ name, sub, initials }: { name: string; sub?: string; initials: string }) {
+export function UserCell({
+  name,
+  sub,
+  initials,
+}: {
+  name: string;
+  sub?: string;
+  initials: string;
+}) {
   return (
     <div className="flex items-center gap-3">
-      <Avatar className="size-8"><AvatarFallback className="gradient-brand text-white text-xs">{initials}</AvatarFallback></Avatar>
+      <Avatar className="size-8">
+        <AvatarFallback className="gradient-brand text-white text-xs">{initials}</AvatarFallback>
+      </Avatar>
       <div>
         <div className="text-sm font-medium">{name}</div>
         {sub && <div className="text-xs text-muted-foreground">{sub}</div>}

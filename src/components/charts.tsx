@@ -1,11 +1,32 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 import { generateRevenueSeries } from "@/lib/mock-data";
 
 const brand = "oklch(0.68 0.19 292)";
 const brand2 = "oklch(0.66 0.18 250)";
 const brand3 = "oklch(0.78 0.14 210)";
 
-export function RevenueChart({ height = 260, data }: { height?: number; data?: ReturnType<typeof generateRevenueSeries> }) {
+export function RevenueChart({
+  height = 260,
+  data,
+}: {
+  height?: number;
+  data?: ReturnType<typeof generateRevenueSeries>;
+}) {
   const series = data ?? generateRevenueSeries(30, 300);
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -17,10 +38,34 @@ export function RevenueChart({ height = 260, data }: { height?: number; data?: R
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.06)" />
-        <XAxis dataKey="date" tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }} axisLine={false} tickLine={false} tickFormatter={(d: string) => d.slice(5)} />
-        <YAxis tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${v}`} />
-        <Tooltip contentStyle={{ background: "oklch(0.21 0.024 265)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 12, fontSize: 12 }} />
-        <Area type="monotone" dataKey="revenue" stroke={brand} strokeWidth={2} fill="url(#revGrad)" />
+        <XAxis
+          dataKey="date"
+          tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }}
+          axisLine={false}
+          tickLine={false}
+          tickFormatter={(d: string) => d.slice(5)}
+        />
+        <YAxis
+          tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }}
+          axisLine={false}
+          tickLine={false}
+          tickFormatter={(v: number) => `$${v}`}
+        />
+        <Tooltip
+          contentStyle={{
+            background: "oklch(0.21 0.024 265)",
+            border: "1px solid oklch(1 0 0 / 0.1)",
+            borderRadius: 12,
+            fontSize: 12,
+          }}
+        />
+        <Area
+          type="monotone"
+          dataKey="revenue"
+          stroke={brand}
+          strokeWidth={2}
+          fill="url(#revGrad)"
+        />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -32,9 +77,26 @@ export function TrafficChart({ height = 220 }: { height?: number }) {
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.06)" />
-        <XAxis dataKey="date" tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }} axisLine={false} tickLine={false} tickFormatter={(d: string) => d.slice(5)} />
-        <YAxis tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }} axisLine={false} tickLine={false} />
-        <Tooltip contentStyle={{ background: "oklch(0.21 0.024 265)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 12, fontSize: 12 }} />
+        <XAxis
+          dataKey="date"
+          tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }}
+          axisLine={false}
+          tickLine={false}
+          tickFormatter={(d: string) => d.slice(5)}
+        />
+        <YAxis
+          tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          contentStyle={{
+            background: "oklch(0.21 0.024 265)",
+            border: "1px solid oklch(1 0 0 / 0.1)",
+            borderRadius: 12,
+            fontSize: 12,
+          }}
+        />
         <Line type="monotone" dataKey="visitors" stroke={brand2} strokeWidth={2} dot={false} />
         <Line type="monotone" dataKey="sales" stroke={brand3} strokeWidth={2} dot={false} />
       </LineChart>
@@ -54,10 +116,27 @@ export function CategoryPie({ height = 240 }: { height?: number }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <PieChart>
-        <Pie data={data} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={4} strokeWidth={0}>
-          {data.map((_, i) => <Cell key={i} fill={colors[i]} />)}
+        <Pie
+          data={data}
+          dataKey="value"
+          nameKey="name"
+          innerRadius={55}
+          outerRadius={90}
+          paddingAngle={4}
+          strokeWidth={0}
+        >
+          {data.map((_, i) => (
+            <Cell key={i} fill={colors[i]} />
+          ))}
         </Pie>
-        <Tooltip contentStyle={{ background: "oklch(0.21 0.024 265)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 12, fontSize: 12 }} />
+        <Tooltip
+          contentStyle={{
+            background: "oklch(0.21 0.024 265)",
+            border: "1px solid oklch(1 0 0 / 0.1)",
+            borderRadius: 12,
+            fontSize: 12,
+          }}
+        />
       </PieChart>
     </ResponsiveContainer>
   );
@@ -69,9 +148,26 @@ export function SalesBarChart({ height = 240 }: { height?: number }) {
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.06)" />
-        <XAxis dataKey="date" tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }} axisLine={false} tickLine={false} tickFormatter={(d: string) => d.slice(5)} />
-        <YAxis tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }} axisLine={false} tickLine={false} />
-        <Tooltip contentStyle={{ background: "oklch(0.21 0.024 265)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 12, fontSize: 12 }} />
+        <XAxis
+          dataKey="date"
+          tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }}
+          axisLine={false}
+          tickLine={false}
+          tickFormatter={(d: string) => d.slice(5)}
+        />
+        <YAxis
+          tick={{ fontSize: 11, fill: "oklch(0.68 0.02 260)" }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          contentStyle={{
+            background: "oklch(0.21 0.024 265)",
+            border: "1px solid oklch(1 0 0 / 0.1)",
+            borderRadius: 12,
+            fontSize: 12,
+          }}
+        />
         <Bar dataKey="sales" fill={brand} radius={[6, 6, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
