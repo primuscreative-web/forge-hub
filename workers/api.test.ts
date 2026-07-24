@@ -108,7 +108,7 @@ class FakeDB {
     if (sql.startsWith("UPDATE creator_products SET category_id")) { const product = this.products.find((entry) => entry.id === values[15]); if (product) Object.assign(product, { category_id: values[0], name: values[1], slug: values[2], short_description: values[3], description: values[4], product_type: values[5], price_cents: values[6], currency: values[7], thumbnail_url: values[8], gallery: values[9], version: values[10], demo_url: values[11], repository_url: values[12], documentation_url: values[13], updated_at: values[14] }); return; }
     if (sql.startsWith("UPDATE creator_products SET status")) { const product = this.products.find((entry) => entry.id === values[3]); if (product) Object.assign(product, { status: values[0], published_at: values[1], updated_at: values[2] }); return; }
     if (sql.startsWith("DELETE FROM creator_products")) { this.products = this.products.filter((entry) => !(entry.id === values[0] && entry.creator_id === values[1])); }
-    if (sql.startsWith("INSERT INTO assets")) { this.assets.push({ id:values[0],owner_user_id:values[1],creator_id:values[2],product_id:values[3],bucket:values[4],object_key:values[5],original_name:values[6],mime_type:values[7],size_bytes:values[8],kind:values[9],status:"active",created_at:values[10],deleted_at:null }); return; }
+    if (sql.startsWith("INSERT INTO assets")) { this.assets.push({ id:values[0],owner_user_id:values[1],creator_id:values[2],product_id:values[3],bucket:values[4],object_key:values[5],original_name:values[6],mime_type:values[7],size_bytes:values[8],kind:values[9],status:"active",created_at:values[10],content_hash:values[11],deleted_at:null }); return; }
     if (sql.startsWith("UPDATE assets SET status")) { const asset=this.assets.find((entry)=>entry.id===values[1]); if(asset) Object.assign(asset,{status:"deleted",deleted_at:values[0]}); return; }
     if (sql.startsWith("UPDATE creator_profiles SET avatar_url")) { const profile=this.profiles.find((entry)=>entry.id===values[2]); if(profile) profile.avatar_url=values[0]; return; }
     if (sql.startsWith("UPDATE creator_profiles SET cover_url")) { const profile=this.profiles.find((entry)=>entry.id===values[2]); if(profile) profile.cover_url=values[0]; return; }
@@ -340,6 +340,7 @@ test("thumbnail ownership, gallery limit, and removed assets are enforced", asyn
   assert.equal((await worker.fetch(uploadRequest(`/api/v1/creator/products/${product.id}/gallery`,new Uint8Array([...png,9]),"image/png",cookie,"ninth.png"),testEnv)).status,400);
   assert.equal((await worker.fetch(request(`/api/v1/creator/products/${product.id}/gallery/${firstId}`,undefined,cookie,"DELETE"),testEnv)).status,200);
   assert.equal((await worker.fetch(request(`/api/v1/media/${firstId}`),testEnv)).status,404);
+  assert.equal((await worker.fetch(uploadRequest(`/api/v1/creator/products/${product.id}/gallery`,new Uint8Array([...png,1]),"image/png",cookie,"renamed.png"),testEnv)).status,409);
 });
 
 test("private files download only for free products and increment real metrics", async () => {

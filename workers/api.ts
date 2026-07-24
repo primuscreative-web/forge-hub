@@ -694,7 +694,8 @@ async function uploadBody(request: Request, allowed: Set<string>, limit: number)
   const buffer = await request.arrayBuffer();
   if (!buffer.byteLength || buffer.byteLength > limit) return { error: "FILE_TOO_LARGE" } as const;
   if (!signatureMatches(new Uint8Array(buffer.slice(0, Math.min(buffer.byteLength, 512))), mime)) return { error: "INVALID_FILE_CONTENT" } as const;
-  return { buffer, mime, name: safeOriginalName(request.headers.get("x-file-name")) } as const;
+  const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", buffer))).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  return { buffer, mime, hash, name: safeOriginalName(request.headers.get("x-file-name")) } as const;
 }
 
 function uploadLimited(request: Request, userId: string) {
@@ -714,7 +715,7 @@ async function deleteAsset(env: Env, asset: Record<string, unknown>) {
   await env.DB!.prepare("UPDATE assets SET status='deleted', deleted_at=? WHERE id=?").bind(new Date().toISOString(), asset.id).run();
 }
 
-async function storeAsset(request: Request, env: Env, user: Record<string, unknown>, creator: Record<string, unknown> | null, product: Record<string, unknown> | null, kind: string, input: { buffer: ArrayBuffer; mime: string; name: string }) {
+async function storeAsset(request: Request, env: Env, user: Record<string, unknown>, creator: Record<string, unknown> | null, product: Record<string, unknown> | null, kind: string, input: { buffer: ArrayBuffer; mime: string; hash: string; name: string }) {
   const id = crypto.randomUUID(); const now = new Date().toISOString();
   const objectKey = kind === "avatar" ? `users/${user.id}/avatar/${crypto.randomUUID()}`
     : kind === "creator_cover" ? `creators/${creator!.id}/cover/${crypto.randomUUID()}`
@@ -724,8 +725,8 @@ async function storeAsset(request: Request, env: Env, user: Record<string, unkno
   const isPrivate = kind === "product_file"; const bucketName = isPrivate ? "private_products" : "public_media"; const bucket = isPrivate ? env.PRIVATE_PRODUCTS : env.PUBLIC_MEDIA;
   if (!bucket) throw new Error("R2 binding unavailable");
   await bucket.put(objectKey, input.buffer, { httpMetadata: { contentType: input.mime } });
-  await env.DB!.prepare("INSERT INTO assets (id,owner_user_id,creator_id,product_id,bucket,object_key,original_name,mime_type,size_bytes,kind,status,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,'active',?)")
-    .bind(id,user.id,creator?.id ?? null,product?.id ?? null,bucketName,objectKey,input.name,input.mime,input.buffer.byteLength,kind,now).run();
+  await env.DB!.prepare("INSERT INTO assets (id,owner_user_id,creator_id,product_id,bucket,object_key,original_name,mime_type,size_bytes,kind,status,created_at,content_hash) VALUES (?,?,?,?,?,?,?,?,?,?,'active',?,?)")
+    .bind(id,user.id,creator?.id ?? null,product?.id ?? null,bucketName,objectKey,input.name,input.mime,input.buffer.byteLength,kind,now,input.hash).run();
   return { id, kind, originalName: input.name, mimeType: input.mime, sizeBytes: input.buffer.byteLength, url: isPrivate ? undefined : mediaUrl(request, id) };
 }
 
@@ -767,7 +768,7 @@ async function handleUpload(request: Request, env: Env, pathname: string) {
   if (kind === "product_gallery" && (existing.results ?? []).length >= 8) return authError(request, env, 400, "GALLERY_LIMIT", "Gallery limit reached");
   const parsed = await uploadBody(request, kind === "product_file" ? fileTypes : imageTypes, kind === "product_file" ? PRODUCT_FILE_LIMIT : IMAGE_LIMIT);
   if ("error" in parsed) return authError(request, env, parsed.error === "FILE_TOO_LARGE" ? 413 : 400, parsed.error, "Invalid upload");
-  if (kind === "product_gallery" && (existing.results ?? []).some((asset) => asset.size_bytes === parsed.buffer.byteLength && asset.mime_type === parsed.mime && asset.original_name === parsed.name)) return authError(request, env, 409, "DUPLICATE_ASSET", "Image already uploaded");
+  if (kind === "product_gallery" && (existing.results ?? []).some((asset) => asset.content_hash === parsed.hash)) return authError(request, env, 409, "DUPLICATE_ASSET", "Image already uploaded");
   if (kind !== "product_gallery") for (const asset of existing.results ?? []) await deleteAsset(env, asset);
   const asset = await storeAsset(request, env, user, creator, product, kind, parsed);
   if (kind === "avatar") await env.DB!.prepare("UPDATE creator_profiles SET avatar_url=?,updated_at=? WHERE id=?").bind(asset.url,new Date().toISOString(),creator.id).run();
