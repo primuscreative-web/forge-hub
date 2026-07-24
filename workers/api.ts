@@ -61,6 +61,15 @@ type Env = {
   };
   ALLOWED_ORIGINS?: string;
   ENVIRONMENT?: string;
+  PUBLIC_MEDIA?: R2Bucket;
+  PRIVATE_PRODUCTS?: R2Bucket;
+};
+
+type R2ObjectBody = { body: ReadableStream; httpEtag?: string; writeHttpMetadata: (headers: Headers) => void };
+type R2Bucket = {
+  put: (key: string, value: ArrayBuffer, options?: { httpMetadata?: { contentType?: string; contentDisposition?: string } }) => Promise<unknown>;
+  get: (key: string) => Promise<R2ObjectBody | null>;
+  delete: (key: string) => Promise<void>;
 };
 
 const MAX_RESULTS = 50;
@@ -72,6 +81,10 @@ const AUTH_WINDOW_MS = 15 * 60 * 1000;
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const authAttempts = new Map<string, { count: number; resetAt: number }>();
+const uploadAttempts = new Map<string, { count: number; resetAt: number }>();
+const recentDownloads = new Map<string, number>();
+const IMAGE_LIMIT = 5 * 1024 * 1024;
+const PRODUCT_FILE_LIMIT = 100 * 1024 * 1024;
 const PRODUCT_SELECT = `
   SELECT id, slug, name, tagline, category, price, free, open_source, premium,
     enterprise, rating, reviews, sales, downloads, views, created_at, version,
@@ -89,7 +102,8 @@ const CREATOR_PRODUCT_SELECT = `
     creator_products.updated_at, creator_products.published_at,
     creator_products.creator_id AS creator,
     creator_profiles.display_name AS creator_name,
-    creator_profiles.avatar_url AS creator_avatar
+    creator_profiles.avatar_url AS creator_avatar,
+    (SELECT COUNT(*) FROM download_events WHERE download_events.product_id=creator_products.id) AS downloads
   FROM creator_products
   JOIN creator_profiles ON creator_profiles.id = creator_products.creator_id AND creator_profiles.status = 'active'
 `;
@@ -511,8 +525,18 @@ function mapCreatorProduct(row: Record<string, unknown>) {
     documentationUrl: row.documentation_url ? String(row.documentation_url) : null,
     createdAt: String(row.created_at), updatedAt: String(row.updated_at),
     publishedAt: row.published_at ? String(row.published_at) : null,
+    downloads: toNumber(row.downloads),
+    productFile: row.file_asset_id ? { id: String(row.file_asset_id), originalName: String(row.file_original_name), mimeType: String(row.file_mime_type), sizeBytes: toNumber(row.file_size_bytes) } : null,
   };
 }
+
+const PRIVATE_PRODUCT_SELECT = `SELECT creator_products.*,
+  (SELECT COUNT(*) FROM download_events WHERE download_events.product_id=creator_products.id) AS downloads,
+  (SELECT id FROM assets WHERE assets.product_id=creator_products.id AND kind='product_file' AND status='active' LIMIT 1) AS file_asset_id,
+  (SELECT original_name FROM assets WHERE assets.product_id=creator_products.id AND kind='product_file' AND status='active' LIMIT 1) AS file_original_name,
+  (SELECT mime_type FROM assets WHERE assets.product_id=creator_products.id AND kind='product_file' AND status='active' LIMIT 1) AS file_mime_type,
+  (SELECT size_bytes FROM assets WHERE assets.product_id=creator_products.id AND kind='product_file' AND status='active' LIMIT 1) AS file_size_bytes
+  FROM creator_products`;
 
 async function currentCreator(env: Env, userId: string) {
   return env.DB!.prepare("SELECT * FROM creator_profiles WHERE user_id = ? LIMIT 1").bind(userId).first();
@@ -586,7 +610,7 @@ async function handleCreatorProducts(request: Request, env: Env, pathname: strin
   const suffix = pathname.replace("/api/v1/creator/products", "").replace(/^\//, "");
   const [id, action] = suffix.split("/");
   if (!id && request.method === "GET") {
-    const result = await env.DB!.prepare("SELECT * FROM creator_products WHERE creator_id=? ORDER BY updated_at DESC").bind(creator.id).all();
+    const result = await env.DB!.prepare(`${PRIVATE_PRODUCT_SELECT} WHERE creator_products.creator_id=? ORDER BY creator_products.updated_at DESC`).bind(creator.id).all();
     return privateResponse(request, env, { products: (result.results ?? []).map(mapCreatorProduct) });
   }
   if (!id && request.method === "POST") {
@@ -599,11 +623,11 @@ async function handleCreatorProducts(request: Request, env: Env, pathname: strin
     const now = new Date().toISOString(); const productId = crypto.randomUUID();
     await env.DB!.prepare("INSERT INTO creator_products (id,creator_id,category_id,name,slug,short_description,description,product_type,price_cents,currency,thumbnail_url,gallery,status,version,demo_url,repository_url,documentation_url,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?, 'draft',?,?,?,?,?,?)")
       .bind(productId, creator.id, input.categoryId, input.name, input.slug, input.shortDescription, input.description, input.productType, input.priceCents, input.currency, input.thumbnailUrl, JSON.stringify(input.gallery), input.version, input.demoUrl, input.repositoryUrl, input.documentationUrl, now, now).run();
-    const product = await env.DB!.prepare("SELECT * FROM creator_products WHERE id=?").bind(productId).first();
+    const product = await env.DB!.prepare(`${PRIVATE_PRODUCT_SELECT} WHERE creator_products.id=?`).bind(productId).first();
     return privateResponse(request, env, { product: mapCreatorProduct(product!) }, 201);
   }
   if (!id || !/^[0-9a-f-]{36}$/.test(id)) return authError(request, env, 404, "NOT_FOUND", "Product not found");
-  const product = await env.DB!.prepare("SELECT * FROM creator_products WHERE id=? LIMIT 1").bind(id).first();
+  const product = await env.DB!.prepare(`${PRIVATE_PRODUCT_SELECT} WHERE creator_products.id=? LIMIT 1`).bind(id).first();
   if (!product) return authError(request, env, 404, "NOT_FOUND", "Product not found");
   if (product.creator_id !== creator.id) return authError(request, env, 403, "FORBIDDEN", "Not allowed");
   if (!action && request.method === "GET") return privateResponse(request, env, { product: mapCreatorProduct(product) });
@@ -616,7 +640,7 @@ async function handleCreatorProducts(request: Request, env: Env, pathname: strin
     if (!category) return authError(request, env, 400, "INVALID_CATEGORY", "Invalid category");
     await env.DB!.prepare("UPDATE creator_products SET category_id=?,name=?,slug=?,short_description=?,description=?,product_type=?,price_cents=?,currency=?,thumbnail_url=?,gallery=?,version=?,demo_url=?,repository_url=?,documentation_url=?,updated_at=? WHERE id=?")
       .bind(input.categoryId,input.name,input.slug,input.shortDescription,input.description,input.productType,input.priceCents,input.currency,input.thumbnailUrl,JSON.stringify(input.gallery),input.version,input.demoUrl,input.repositoryUrl,input.documentationUrl,new Date().toISOString(),id).run();
-    const updated = await env.DB!.prepare("SELECT * FROM creator_products WHERE id=?").bind(id).first();
+    const updated = await env.DB!.prepare(`${PRIVATE_PRODUCT_SELECT} WHERE creator_products.id=?`).bind(id).first();
     return privateResponse(request, env, { product: mapCreatorProduct(updated!) });
   }
   if (!action && request.method === "DELETE") {
@@ -627,13 +651,151 @@ async function handleCreatorProducts(request: Request, env: Env, pathname: strin
   }
   if ((action === "publish" || action === "unpublish") && request.method === "POST") {
     if (action === "publish" && (!product.name || !product.short_description || !product.description || !product.category_id || !PRODUCT_TYPES.has(String(product.product_type)))) return authError(request, env, 400, "INCOMPLETE_PRODUCT", "Complete required fields before publishing");
+    if (action === "publish" && toNumber(product.price_cents) === 0 && !product.demo_url) {
+      const file = await env.DB!.prepare("SELECT id FROM assets WHERE product_id=? AND kind='product_file' AND status='active' LIMIT 1").bind(id).first();
+      if (!file) return authError(request, env, 400, "PRODUCT_FILE_REQUIRED", "Free products require a file or access URL");
+    }
     const now = new Date().toISOString(); const status = action === "publish" ? "published" : "unpublished";
     await env.DB!.prepare("UPDATE creator_products SET status=?, published_at=?, updated_at=? WHERE id=?")
       .bind(status, action === "publish" ? now : null, now, id).run();
-    const updated = await env.DB!.prepare("SELECT * FROM creator_products WHERE id=?").bind(id).first();
+    const updated = await env.DB!.prepare(`${PRIVATE_PRODUCT_SELECT} WHERE creator_products.id=?`).bind(id).first();
     return privateResponse(request, env, { product: mapCreatorProduct(updated!) });
   }
   return authError(request, env, 404, "NOT_FOUND", "Not found");
+}
+
+function mediaUrl(request: Request, id: string) {
+  return `${new URL(request.url).origin}/api/v1/media/${id}`;
+}
+
+function safeOriginalName(value: string | null) {
+  const name = (value ? decodeURIComponent(value) : "file").replace(/[\\/\0\r\n]/g, "_").trim().slice(0, 180);
+  return name || "file";
+}
+
+function signatureMatches(bytes: Uint8Array, mime: string) {
+  if (mime === "image/jpeg") return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  if (mime === "image/png") return [0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a].every((value, index) => bytes[index] === value);
+  if (mime === "image/webp") return new TextDecoder().decode(bytes.slice(0, 4)) === "RIFF" && new TextDecoder().decode(bytes.slice(8, 12)) === "WEBP";
+  if (mime === "application/zip" || mime === "application/x-zip-compressed") return bytes[0] === 0x50 && bytes[1] === 0x4b && [[3,4],[5,6],[7,8]].some(([a,b]) => bytes[2] === a && bytes[3] === b);
+  if (mime === "application/pdf") return new TextDecoder().decode(bytes.slice(0, 5)) === "%PDF-";
+  if (mime === "text/plain" || mime === "application/json") {
+    if (bytes.includes(0)) return false;
+    try { const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes); if (mime === "application/json") JSON.parse(text); return true; } catch { return false; }
+  }
+  return false;
+}
+
+async function uploadBody(request: Request, allowed: Set<string>, limit: number) {
+  const length = Number(request.headers.get("content-length") ?? 0);
+  if (length > limit) return { error: "FILE_TOO_LARGE" } as const;
+  const mime = (request.headers.get("content-type") ?? "").split(";", 1)[0].toLowerCase();
+  if (!allowed.has(mime)) return { error: "INVALID_FILE_TYPE" } as const;
+  const buffer = await request.arrayBuffer();
+  if (!buffer.byteLength || buffer.byteLength > limit) return { error: "FILE_TOO_LARGE" } as const;
+  if (!signatureMatches(new Uint8Array(buffer.slice(0, Math.min(buffer.byteLength, 512))), mime)) return { error: "INVALID_FILE_CONTENT" } as const;
+  return { buffer, mime, name: safeOriginalName(request.headers.get("x-file-name")) } as const;
+}
+
+function uploadLimited(request: Request, userId: string) {
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  const key = `${userId}:${ip}`; const now = Date.now(); const current = uploadAttempts.get(key);
+  if (!current || current.resetAt <= now) { uploadAttempts.set(key, { count: 1, resetAt: now + 60_000 }); return false; }
+  current.count += 1; return current.count > 30;
+}
+
+async function activeAsset(env: Env, id: string) {
+  return env.DB!.prepare("SELECT * FROM assets WHERE id=? AND status='active' LIMIT 1").bind(id).first();
+}
+
+async function deleteAsset(env: Env, asset: Record<string, unknown>) {
+  const bucket = asset.bucket === "public_media" ? env.PUBLIC_MEDIA : env.PRIVATE_PRODUCTS;
+  await bucket?.delete(String(asset.object_key));
+  await env.DB!.prepare("UPDATE assets SET status='deleted', deleted_at=? WHERE id=?").bind(new Date().toISOString(), asset.id).run();
+}
+
+async function storeAsset(request: Request, env: Env, user: Record<string, unknown>, creator: Record<string, unknown> | null, product: Record<string, unknown> | null, kind: string, input: { buffer: ArrayBuffer; mime: string; name: string }) {
+  const id = crypto.randomUUID(); const now = new Date().toISOString();
+  const objectKey = kind === "avatar" ? `users/${user.id}/avatar/${crypto.randomUUID()}`
+    : kind === "creator_cover" ? `creators/${creator!.id}/cover/${crypto.randomUUID()}`
+    : kind === "product_thumbnail" ? `products/${product!.id}/thumbnail/${crypto.randomUUID()}`
+    : kind === "product_gallery" ? `products/${product!.id}/gallery/${crypto.randomUUID()}`
+    : `products/${product!.id}/releases/${String(product!.version).replace(/[^a-zA-Z0-9._-]/g, "_")}/${crypto.randomUUID()}`;
+  const isPrivate = kind === "product_file"; const bucketName = isPrivate ? "private_products" : "public_media"; const bucket = isPrivate ? env.PRIVATE_PRODUCTS : env.PUBLIC_MEDIA;
+  if (!bucket) throw new Error("R2 binding unavailable");
+  await bucket.put(objectKey, input.buffer, { httpMetadata: { contentType: input.mime } });
+  await env.DB!.prepare("INSERT INTO assets (id,owner_user_id,creator_id,product_id,bucket,object_key,original_name,mime_type,size_bytes,kind,status,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,'active',?)")
+    .bind(id,user.id,creator?.id ?? null,product?.id ?? null,bucketName,objectKey,input.name,input.mime,input.buffer.byteLength,kind,now).run();
+  return { id, kind, originalName: input.name, mimeType: input.mime, sizeBytes: input.buffer.byteLength, url: isPrivate ? undefined : mediaUrl(request, id) };
+}
+
+async function ownedProduct(env: Env, userId: string, id: string) {
+  return env.DB!.prepare("SELECT creator_products.* FROM creator_products JOIN creator_profiles ON creator_profiles.id=creator_products.creator_id WHERE creator_products.id=? AND creator_profiles.user_id=? LIMIT 1").bind(id,userId).first();
+}
+
+async function handleUpload(request: Request, env: Env, pathname: string) {
+  const user = await authenticatedUser(request, env); if (!user) return authError(request, env, 401, "UNAUTHENTICATED", "Authentication required");
+  if (uploadLimited(request, String(user.id))) return authError(request, env, 429, "RATE_LIMITED", "Too many uploads");
+  const creator = await currentCreator(env, String(user.id));
+  const imageTypes = new Set(["image/jpeg","image/png","image/webp"]); const fileTypes = new Set(["application/zip","application/x-zip-compressed","application/pdf","text/plain","application/json"]);
+  let kind = ""; let product: Record<string, unknown> | null = null;
+  if (pathname === "/api/v1/uploads/avatar") kind = "avatar";
+  else if (pathname === "/api/v1/uploads/creator-cover") kind = "creator_cover";
+  else {
+    const match = pathname.match(/^\/api\/v1\/creator\/products\/([0-9a-f-]{36})\/(thumbnail|gallery|file)(?:\/([0-9a-f-]{36}))?$/);
+    if (!match) return authError(request, env, 404, "NOT_FOUND", "Not found");
+    product = await ownedProduct(env, String(user.id), match[1]); if (!product) return authError(request, env, 403, "FORBIDDEN", "Not allowed");
+    kind = match[2] === "thumbnail" ? "product_thumbnail" : match[2] === "gallery" ? "product_gallery" : "product_file";
+    if (request.method === "DELETE" && match[2] === "gallery") {
+      const asset = match[3] ? await activeAsset(env, match[3]) : null;
+      if (!asset || asset.product_id !== product.id || asset.kind !== "product_gallery") return authError(request, env, 404, "NOT_FOUND", "Asset not found");
+      await deleteAsset(env, asset); const gallery = (typeof product.gallery === "string" ? JSON.parse(String(product.gallery)) : []).filter((url: string) => url !== mediaUrl(request, String(asset.id)));
+      await env.DB!.prepare("UPDATE creator_products SET gallery=?,updated_at=? WHERE id=?").bind(JSON.stringify(gallery),new Date().toISOString(),product.id).run(); return privateResponse(request, env, { ok: true });
+    }
+  }
+  if (!creator) return authError(request, env, 403, "CREATOR_REQUIRED", "Creator profile required");
+  const existing = await env.DB!.prepare("SELECT * FROM assets WHERE owner_user_id=? AND kind=? AND status='active'" + (product ? " AND product_id=?" : "") + " ORDER BY created_at").bind(...(product ? [user.id,kind,product.id] : [user.id,kind])).all();
+  if (request.method === "DELETE") {
+    for (const asset of existing.results ?? []) await deleteAsset(env, asset);
+    const now = new Date().toISOString();
+    if (kind === "avatar") await env.DB!.prepare("UPDATE creator_profiles SET avatar_url=NULL,updated_at=? WHERE id=?").bind(now,creator.id).run();
+    if (kind === "creator_cover") await env.DB!.prepare("UPDATE creator_profiles SET cover_url=NULL,updated_at=? WHERE id=?").bind(now,creator.id).run();
+    if (kind === "product_thumbnail") await env.DB!.prepare("UPDATE creator_products SET thumbnail_url=NULL,updated_at=? WHERE id=?").bind(now,product!.id).run();
+    return privateResponse(request, env, { ok: true });
+  }
+  if (request.method !== "POST") return authError(request, env, 404, "NOT_FOUND", "Not found");
+  if (kind === "product_gallery" && (existing.results ?? []).length >= 8) return authError(request, env, 400, "GALLERY_LIMIT", "Gallery limit reached");
+  const parsed = await uploadBody(request, kind === "product_file" ? fileTypes : imageTypes, kind === "product_file" ? PRODUCT_FILE_LIMIT : IMAGE_LIMIT);
+  if ("error" in parsed) return authError(request, env, parsed.error === "FILE_TOO_LARGE" ? 413 : 400, parsed.error, "Invalid upload");
+  if (kind === "product_gallery" && (existing.results ?? []).some((asset) => asset.size_bytes === parsed.buffer.byteLength && asset.mime_type === parsed.mime && asset.original_name === parsed.name)) return authError(request, env, 409, "DUPLICATE_ASSET", "Image already uploaded");
+  if (kind !== "product_gallery") for (const asset of existing.results ?? []) await deleteAsset(env, asset);
+  const asset = await storeAsset(request, env, user, creator, product, kind, parsed);
+  if (kind === "avatar") await env.DB!.prepare("UPDATE creator_profiles SET avatar_url=?,updated_at=? WHERE id=?").bind(asset.url,new Date().toISOString(),creator.id).run();
+  if (kind === "creator_cover") await env.DB!.prepare("UPDATE creator_profiles SET cover_url=?,updated_at=? WHERE id=?").bind(asset.url,new Date().toISOString(),creator.id).run();
+  if (kind === "product_thumbnail") await env.DB!.prepare("UPDATE creator_products SET thumbnail_url=?,updated_at=? WHERE id=?").bind(asset.url,new Date().toISOString(),product!.id).run();
+  if (kind === "product_gallery") { const gallery = typeof product!.gallery === "string" ? JSON.parse(String(product!.gallery)) : []; gallery.push(asset.url); await env.DB!.prepare("UPDATE creator_products SET gallery=?,updated_at=? WHERE id=?").bind(JSON.stringify(gallery),new Date().toISOString(),product!.id).run(); }
+  return privateResponse(request, env, { asset }, 201);
+}
+
+async function serveMedia(request: Request, env: Env, id: string) {
+  if (!/^[0-9a-f-]{36}$/.test(id)) return errorResponse(404, "NOT_FOUND", "Asset not found");
+  const asset = await activeAsset(env, id); if (!asset || asset.bucket !== "public_media") return errorResponse(404, "NOT_FOUND", "Asset not found");
+  const object = await env.PUBLIC_MEDIA?.get(String(asset.object_key)); if (!object) return errorResponse(404, "NOT_FOUND", "Asset not found");
+  const headers = new Headers({ "content-type": String(asset.mime_type), "cache-control": "public, max-age=31536000, immutable", "x-content-type-options": "nosniff" });
+  return new Response(object.body, { headers });
+}
+
+async function serveDownload(request: Request, env: Env, slug: string) {
+  const product = await env.DB!.prepare("SELECT * FROM creator_products WHERE slug=? AND status='published' LIMIT 1").bind(slug).first();
+  if (!product) return errorResponse(404, "NOT_FOUND", "Product not found");
+  if (toNumber(product.price_cents) > 0) return errorResponse(403, "PURCHASE_REQUIRED", "Compra necessária");
+  const asset = await env.DB!.prepare("SELECT * FROM assets WHERE product_id=? AND kind='product_file' AND status='active' LIMIT 1").bind(product.id).first();
+  if (!asset) return errorResponse(404, "NOT_FOUND", "Product file not found");
+  const object = await env.PRIVATE_PRODUCTS?.get(String(asset.object_key)); if (!object) return errorResponse(404, "NOT_FOUND", "Product file not found");
+  const user = await authenticatedUser(request, env); const token = cookieToken(request); const ip = request.headers.get("cf-connecting-ip") ?? "unknown"; const sessionHash = await sha256(token || ip); const key = `${product.id}:${sessionHash}`; const now = Date.now();
+  if (!recentDownloads.has(key) || now - recentDownloads.get(key)! > 10 * 60_000) { recentDownloads.set(key, now); await env.DB!.prepare("INSERT INTO download_events (id,product_id,user_id,session_hash,created_at) VALUES (?,?,?,?,?)").bind(crypto.randomUUID(),product.id,user?.id ?? null,sessionHash,new Date().toISOString()).run(); }
+  const filename = safeOriginalName(String(asset.original_name)); const headers = new Headers({ "content-type": String(asset.mime_type), "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`, "cache-control": "private, no-store", "x-content-type-options": "nosniff" });
+  return new Response(object.body, { headers });
 }
 
 function isValidSlug(value: string): boolean {
@@ -660,6 +822,7 @@ function mapProduct(row: Record<string, unknown>) {
     demoUrl: row.demo_url ? String(row.demo_url) : undefined,
     repositoryUrl: row.repository_url ? String(row.repository_url) : undefined,
     documentationUrl: row.documentation_url ? String(row.documentation_url) : undefined,
+    gallery: typeof row.gallery === "string" ? JSON.parse(row.gallery) : [],
     status: String(row.status ?? "published"),
     license: price === 0 ? ["Free"] : ["Commercial"],
     free: modern ? price === 0 : toBoolean(row.free),
@@ -701,6 +864,8 @@ function mapCreator(row: Record<string, unknown>) {
     location: String(row.location ?? ""),
     joined: String(row.joined ?? ""),
     organization: row.organization ? String(row.organization) : undefined,
+    avatarUrl: row.avatar_url ? String(row.avatar_url) : undefined,
+    coverUrl: row.cover_url ? String(row.cover_url) : undefined,
   };
 }
 
@@ -790,7 +955,7 @@ async function readCatalogFromD1(env: Env) {
   try {
     const categoriesResult = await env.DB.prepare("SELECT categories.slug, categories.name, categories.group_name, COUNT(creator_products.id) AS count FROM categories LEFT JOIN creator_products ON creator_products.category_id = categories.slug AND creator_products.status = 'published' GROUP BY categories.slug, categories.name, categories.group_name").all();
     const productsResult = await env.DB.prepare(`${CREATOR_PRODUCT_SELECT} WHERE creator_products.status = 'published'`).all();
-    const creatorsResult = await env.DB.prepare(`SELECT id, slug AS handle, display_name AS name, display_name AS avatar, 0 AS verified, 0 AS followers, 0 AS sales, 0 AS rating, bio, COALESCE(location, '') AS location, created_at AS joined, headline AS organization FROM creator_profiles WHERE status = 'active'`).all();
+    const creatorsResult = await env.DB.prepare(`SELECT id, slug AS handle, display_name AS name, display_name AS avatar, 0 AS verified, 0 AS followers, 0 AS sales, 0 AS rating, bio, COALESCE(location, '') AS location, created_at AS joined, headline AS organization, avatar_url, cover_url FROM creator_profiles WHERE status = 'active'`).all();
 
     const categories = (categoriesResult.results ?? []).map((row) => ({
       slug: String(row.slug ?? ""),
@@ -818,7 +983,7 @@ export default {
       return new Response(null, {
         status: 204,
         headers: {
-          "access-control-allow-headers": "Content-Type",
+          "access-control-allow-headers": "Content-Type, X-File-Name",
           "access-control-allow-methods": "GET, POST, PATCH, DELETE, OPTIONS",
           "access-control-allow-origin": origin,
           "access-control-allow-credentials": "true",
@@ -835,6 +1000,16 @@ export default {
         console.error("Authentication request failed", error instanceof Error ? error.message : "Unknown error");
         return authError(request, env, 500, "INTERNAL_ERROR", "Unable to process authentication");
       }
+    }
+
+    if (url.pathname === "/api/v1/uploads/avatar" || url.pathname === "/api/v1/uploads/creator-cover") {
+      try { return await handleUpload(request, env, url.pathname); }
+      catch (error) { console.error("Upload request failed", error instanceof Error ? error.message : "Unknown error"); return authError(request, env, 500, "INTERNAL_ERROR", "Unable to process upload"); }
+    }
+
+    if (/^\/api\/v1\/creator\/products\/[0-9a-f-]{36}\/(thumbnail|gallery|file)(?:\/[0-9a-f-]{36})?$/.test(url.pathname)) {
+      try { return await handleUpload(request, env, url.pathname); }
+      catch (error) { console.error("Product upload request failed", error instanceof Error ? error.message : "Unknown error"); return authError(request, env, 500, "INTERNAL_ERROR", "Unable to process upload"); }
     }
 
     if (url.pathname === "/api/v1/creator/profile") {
@@ -877,6 +1052,18 @@ export default {
     if (url.pathname === "/api/v1/creators") {
       const data = await readCatalogFromD1(env);
       return jsonResponse(data?.creators ?? seedCreators);
+    }
+
+    if (url.pathname.startsWith("/api/v1/media/") && request.method === "GET") {
+      try { return await serveMedia(request, env, url.pathname.replace("/api/v1/media/", "")); }
+      catch { return errorResponse(500, "INTERNAL_ERROR", "Unable to load asset"); }
+    }
+
+    if (url.pathname.startsWith("/api/v1/products/") && url.pathname.endsWith("/download") && request.method === "GET") {
+      const slug = url.pathname.slice("/api/v1/products/".length, -"/download".length);
+      if (!isValidSlug(slug)) return errorResponse(404, "NOT_FOUND", "Product not found");
+      try { return await serveDownload(request, env, slug); }
+      catch { return errorResponse(500, "INTERNAL_ERROR", "Unable to download product"); }
     }
 
     if (url.pathname.startsWith("/api/v1/products/")) {

@@ -14,5 +14,9 @@
       "database_name": "devforge-hub",
       "database_id": "bff6c7e0-f593-42e1-a369-dff8d9a8afdf"
     }
+  ],
+  "r2_buckets": [
+    { "binding": "PUBLIC_MEDIA", "bucket_name": "devforge-public-media" },
+    { "binding": "PRIVATE_PRODUCTS", "bucket_name": "devforge-private-products" }
   ]
 }

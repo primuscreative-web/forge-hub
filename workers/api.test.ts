@@ -12,6 +12,8 @@ class FakeDB {
   profiles: Row[] = [];
   products: Row[] = [];
   categories: Row[] = [{ slug: "saas", name: "SaaS", count: 0, group_name: "Products" }];
+  assets: Row[] = [];
+  downloads: Row[] = [];
 
   prepare(sql: string) {
     let values: unknown[] = [];
@@ -52,12 +54,16 @@ class FakeDB {
     if (sql.includes("FROM categories WHERE slug")) return this.categories.find((entry) => entry.slug === values[0]) ?? null;
     if (sql.includes("FROM creator_products WHERE slug") && sql.includes("id<>")) return this.products.find((entry) => entry.slug === values[0] && entry.id !== values[1]) ?? null;
     if (sql.includes("FROM creator_products WHERE slug")) { const product = this.products.find((entry) => entry.slug === values[0] && (!sql.includes("status = 'published'") || entry.status === "published")); return product ? { ...product, tagline: product.short_description, category: product.category_id, creator: product.creator_id } : null; }
-    if (sql.includes("FROM creator_products WHERE id")) return this.products.find((entry) => entry.id === values[0]) ?? null;
+    if (sql.includes("FROM creator_products JOIN creator_profiles") && sql.includes("creator_products.id=?")) { const product=this.products.find((entry)=>entry.id===values[0]); const profile=product&&this.profiles.find((entry)=>entry.id===product.creator_id&&entry.user_id===values[1]); return profile ? product : null; }
+    if (sql.includes("FROM creator_products") && sql.includes("creator_products.id=?")) return this.products.find((entry) => entry.id === values[0]) ?? null;
+    if (sql.includes("FROM assets WHERE id=")) return this.assets.find((entry) => entry.id === values[0] && entry.status === "active") ?? null;
+    if (sql.includes("FROM assets WHERE product_id") && sql.includes("product_file")) return this.assets.find((entry) => entry.product_id === values[0] && entry.kind === "product_file" && entry.status === "active") ?? null;
     return null;
   }
 
   private all(sql: string, values: unknown[]) {
-    if (sql.includes("FROM creator_products WHERE creator_id")) return this.products.filter((entry) => entry.creator_id === values[0]).map((entry) => ({ ...entry }));
+    if (sql.includes("FROM creator_products") && sql.includes("creator_products.creator_id=?")) return this.products.filter((entry) => entry.creator_id === values[0]).map((entry) => ({ ...entry, downloads: this.downloads.filter((event) => event.product_id === entry.id).length }));
+    if (sql.includes("FROM assets WHERE owner_user_id")) return this.assets.filter((entry) => entry.owner_user_id === values[0] && entry.kind === values[1] && entry.status === "active" && (values.length < 3 || entry.product_id === values[2]));
     if (sql.includes("FROM creator_products") && sql.includes("status = 'published'")) return this.products.filter((entry) => entry.status === "published").map((entry) => ({ ...entry, tagline: entry.short_description, category: entry.category_id, creator: entry.creator_id }));
     if (sql.includes("FROM categories")) return this.categories;
     if (sql.includes("FROM creator_profiles WHERE status = 'active'")) return this.profiles.filter((entry) => entry.status === "active");
@@ -102,15 +108,36 @@ class FakeDB {
     if (sql.startsWith("UPDATE creator_products SET category_id")) { const product = this.products.find((entry) => entry.id === values[15]); if (product) Object.assign(product, { category_id: values[0], name: values[1], slug: values[2], short_description: values[3], description: values[4], product_type: values[5], price_cents: values[6], currency: values[7], thumbnail_url: values[8], gallery: values[9], version: values[10], demo_url: values[11], repository_url: values[12], documentation_url: values[13], updated_at: values[14] }); return; }
     if (sql.startsWith("UPDATE creator_products SET status")) { const product = this.products.find((entry) => entry.id === values[3]); if (product) Object.assign(product, { status: values[0], published_at: values[1], updated_at: values[2] }); return; }
     if (sql.startsWith("DELETE FROM creator_products")) { this.products = this.products.filter((entry) => !(entry.id === values[0] && entry.creator_id === values[1])); }
+    if (sql.startsWith("INSERT INTO assets")) { this.assets.push({ id:values[0],owner_user_id:values[1],creator_id:values[2],product_id:values[3],bucket:values[4],object_key:values[5],original_name:values[6],mime_type:values[7],size_bytes:values[8],kind:values[9],status:"active",created_at:values[10],deleted_at:null }); return; }
+    if (sql.startsWith("UPDATE assets SET status")) { const asset=this.assets.find((entry)=>entry.id===values[1]); if(asset) Object.assign(asset,{status:"deleted",deleted_at:values[0]}); return; }
+    if (sql.startsWith("UPDATE creator_profiles SET avatar_url")) { const profile=this.profiles.find((entry)=>entry.id===values[2]); if(profile) profile.avatar_url=values[0]; return; }
+    if (sql.startsWith("UPDATE creator_profiles SET cover_url")) { const profile=this.profiles.find((entry)=>entry.id===values[2]); if(profile) profile.cover_url=values[0]; return; }
+    if (sql.startsWith("UPDATE creator_products SET thumbnail_url")) { const product=this.products.find((entry)=>entry.id===values[2]); if(product) product.thumbnail_url=values[0]; return; }
+    if (sql.startsWith("UPDATE creator_products SET gallery")) { const product=this.products.find((entry)=>entry.id===values[2]); if(product) product.gallery=values[0]; return; }
+    if (sql.startsWith("INSERT INTO download_events")) { this.downloads.push({id:values[0],product_id:values[1],user_id:values[2],session_hash:values[3],created_at:values[4]}); }
   }
+}
+
+class FakeR2 {
+  objects = new Map<string, { bytes: ArrayBuffer; contentType?: string }>();
+  async put(key: string, bytes: ArrayBuffer, options?: { httpMetadata?: { contentType?: string } }) { this.objects.set(key,{bytes,contentType:options?.httpMetadata?.contentType}); }
+  async get(key: string) { const value=this.objects.get(key); if(!value)return null; return { body: new Blob([value.bytes]).stream(), writeHttpMetadata(headers: Headers){ if(value.contentType)headers.set("content-type",value.contentType); } }; }
+  async delete(key: string) { this.objects.delete(key); }
 }
 
 const origin = "https://forge-hub-nine.vercel.app";
 const env = (db = new FakeDB()) => ({
   DB: db,
+  PUBLIC_MEDIA: new FakeR2(),
+  PRIVATE_PRODUCTS: new FakeR2(),
   ALLOWED_ORIGINS: origin,
   ENVIRONMENT: "cross-site-preview",
 });
+
+function uploadRequest(path: string, bytes: Uint8Array, mime: string, cookie?: string, name="file.bin") {
+  requestSequence += 1;
+  return new Request(`https://api.test${path}`, { method:"POST", headers:{origin,"cf-connecting-ip":`198.51.100.${requestSequence}`,"content-type":mime,"content-length":String(bytes.byteLength),"x-file-name":encodeURIComponent(name),...(cookie?{cookie}:{})}, body:bytes });
+}
 
 let requestSequence = 0;
 function request(path: string, body?: Row, cookie?: string, method?: string) {
@@ -287,4 +314,42 @@ test("private creator endpoints require a cross-site session", async () => {
   const blocked = await worker.fetch(request("/api/v1/creator/products"), testEnv); assert.equal(blocked.status, 401);
   const registration = await register(testEnv); const cookie = registration.headers.get("set-cookie") ?? "";
   assert.match(cookie, /SameSite=None/); assert.match(cookie, /Secure/); assert.match(cookie, /HttpOnly/);
+});
+
+const png = new Uint8Array([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a,1,2,3,4]);
+const zip = new Uint8Array([0x50,0x4b,0x03,0x04,1,2,3,4]);
+
+test("avatar upload validates auth, signature, size, and response privacy", async () => {
+  const testEnv=env(); const cookie=await creatorSession(testEnv);
+  assert.equal((await worker.fetch(uploadRequest("/api/v1/uploads/avatar",png,"image/png"),testEnv)).status,401);
+  assert.equal((await worker.fetch(uploadRequest("/api/v1/uploads/avatar",new Uint8Array([1,2,3]),"image/png",cookie),testEnv)).status,400);
+  const tooLarge=uploadRequest("/api/v1/uploads/avatar",png,"image/png",cookie); tooLarge.headers.set("content-length",String(5*1024*1024+1));
+  assert.equal((await worker.fetch(tooLarge,testEnv)).status,413);
+  const response=await worker.fetch(uploadRequest("/api/v1/uploads/avatar",png,"image/png",cookie,"avatar.png"),testEnv); assert.equal(response.status,201);
+  const body=await response.json() as {asset:Row}; assert.equal("object_key" in body.asset,false); assert.equal("bucket" in body.asset,false);
+  assert.equal((await worker.fetch(request(`/api/v1/media/${body.asset.id}`),testEnv)).status,200);
+});
+
+test("thumbnail ownership, gallery limit, and removed assets are enforced", async () => {
+  const testEnv=env(); const cookie=await creatorSession(testEnv); const product=await draft(testEnv,cookie);
+  assert.equal((await worker.fetch(uploadRequest(`/api/v1/creator/products/${product.id}/thumbnail`,png,"image/png",cookie,"thumb.png"),testEnv)).status,201);
+  const other=await creatorSession(testEnv,"asset-other@example.com",{...profileInput,slug:"asset-other"});
+  assert.equal((await worker.fetch(uploadRequest(`/api/v1/creator/products/${product.id}/thumbnail`,png,"image/png",other),testEnv)).status,403);
+  let firstId="";
+  for(let index=0;index<8;index++){ const response=await worker.fetch(uploadRequest(`/api/v1/creator/products/${product.id}/gallery`,new Uint8Array([...png,index]),"image/png",cookie,`image-${index}.png`),testEnv); assert.equal(response.status,201); if(index===0) firstId=String((await response.json() as {asset:Row}).asset.id); }
+  assert.equal((await worker.fetch(uploadRequest(`/api/v1/creator/products/${product.id}/gallery`,new Uint8Array([...png,9]),"image/png",cookie,"ninth.png"),testEnv)).status,400);
+  assert.equal((await worker.fetch(request(`/api/v1/creator/products/${product.id}/gallery/${firstId}`,undefined,cookie,"DELETE"),testEnv)).status,200);
+  assert.equal((await worker.fetch(request(`/api/v1/media/${firstId}`),testEnv)).status,404);
+});
+
+test("private files download only for free products and increment real metrics", async () => {
+  const testEnv=env(); const cookie=await creatorSession(testEnv); const product=await draft(testEnv,cookie,{...productInput,demoUrl:null});
+  assert.equal((await worker.fetch(uploadRequest(`/api/v1/creator/products/${product.id}/file`,zip,"application/zip",cookie,"release.zip"),testEnv)).status,201);
+  assert.equal((await worker.fetch(request(`/api/v1/creator/products/${product.id}/publish`,{},cookie),testEnv)).status,200);
+  const download=await worker.fetch(request(`/api/v1/products/${product.slug}/download`,undefined,cookie),testEnv); assert.equal(download.status,200); assert.match(download.headers.get("content-disposition")??"",/attachment/); assert.equal(testEnv.DB.downloads.length,1);
+  await worker.fetch(request(`/api/v1/products/${product.slug}/download`,undefined,cookie),testEnv); assert.equal(testEnv.DB.downloads.length,1);
+  const paid=await draft(testEnv,cookie,{...productInput,slug:"paid-file",priceCents:1000}); testEnv.DB.products.find((entry)=>entry.id===paid.id)!.status="published";
+  assert.equal((await worker.fetch(request("/api/v1/products/paid-file/download"),testEnv)).status,403);
+  assert.equal((await worker.fetch(request(`/api/v1/creator/products/${product.id}/file`,undefined,cookie,"DELETE"),testEnv)).status,200);
+  assert.equal((await worker.fetch(request(`/api/v1/media/${crypto.randomUUID()}`),testEnv)).status,404);
 });

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { creatorApi, CreatorApiError, type CreatorProduct, type CreatorProfile } from "@/lib/creator-api";
 import { FileText, PackageCheck, PackageOpen } from "lucide-react";
+import { deleteUpload, uploadFile } from "@/lib/upload-api";
 
 export const Route = createFileRoute("/creator/")({ component: CreatorDashboard });
 
@@ -22,6 +23,7 @@ function CreatorDashboard() {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [form, setForm] = useState({ displayName: "", slug: "", headline: "", bio: "" });
 
   useEffect(() => {
@@ -48,6 +50,18 @@ function CreatorDashboard() {
     finally { setSaving(false); }
   }
 
+  async function uploadProfile(kind: "avatar" | "creator-cover", file?: File) {
+    if (!file) return; setError("");
+    try { const asset = await uploadFile(`uploads/${kind}`, file, (value) => setUploadProgress((current) => ({ ...current, [kind]: value }))); setProfile((current) => current ? { ...current, [kind === "avatar" ? "avatarUrl" : "coverUrl"]: asset.url ?? null } : current); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Upload failed"); }
+    finally { setUploadProgress((current) => ({ ...current, [kind]: 0 })); }
+  }
+
+  async function removeProfileAsset(kind: "avatar" | "creator-cover") {
+    try { await deleteUpload(`uploads/${kind}`); setProfile((current) => current ? { ...current, [kind === "avatar" ? "avatarUrl" : "coverUrl"]: null } : current); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to remove image"); }
+  }
+
   if (loading) return <DashboardLayout side={<SideNav items={creatorNav} title="Creator" />}><div className="p-8 text-muted-foreground">Loading creator profile…</div></DashboardLayout>;
 
   if (!profile) return (
@@ -70,7 +84,7 @@ function CreatorDashboard() {
 
   const published = products.filter((p) => p.status === "published").length;
   const drafts = products.filter((p) => p.status === "draft").length;
-  const unpublished = products.filter((p) => p.status === "unpublished").length;
+  const downloads = products.reduce((total, product) => total + (product.downloads ?? 0), 0);
   return (
     <DashboardLayout side={<SideNav items={creatorNav} title="Creator" />}>
       <div className="p-6 md:p-8 max-w-[1400px]">
@@ -79,11 +93,11 @@ function CreatorDashboard() {
           <StatCard label="Total products" value={String(products.length)} icon={<PackageOpen className="size-4" />} />
           <StatCard label="Published" value={String(published)} icon={<PackageCheck className="size-4" />} />
           <StatCard label="Drafts" value={String(drafts)} icon={<FileText className="size-4" />} />
-          <StatCard label="Unpublished" value={String(unpublished)} icon={<PackageOpen className="size-4" />} />
+          <StatCard label="Downloads" value={String(downloads)} icon={<PackageOpen className="size-4" />} />
         </div>
         <div className="mt-8 card-elegant rounded-2xl p-6">
           <div className="flex items-center justify-between"><div><h2 className="font-semibold">Public profile</h2><p className="text-sm text-muted-foreground">devforge hub / creator / {profile.slug}</p></div><Button variant="outline" onClick={() => setEditing(!editing)}>{editing ? "Cancel" : "Edit profile"}</Button></div>
-          {editing ? <form onSubmit={updateProfile} className="mt-5 space-y-4"><div className="grid gap-4 sm:grid-cols-2"><div><Label>Public name</Label><Input required value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} /></div><div><Label>Slug</Label><Input required value={form.slug} onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })} /></div></div><div><Label>Headline</Label><Input required value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} /></div><div><Label>Biography</Label><Textarea required minLength={10} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} /></div>{error && <p className="text-sm text-destructive">{error}</p>}<Button disabled={saving}>{saving ? "Saving…" : "Save profile"}</Button></form> : <div className="mt-4"><p className="font-medium">{profile.headline}</p><p className="mt-2 text-sm text-muted-foreground">{profile.bio}</p></div>}
+          {editing ? <form onSubmit={updateProfile} className="mt-5 space-y-4"><div className="grid gap-4 sm:grid-cols-2"><div><Label>Public name</Label><Input required value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} /></div><div><Label>Slug</Label><Input required value={form.slug} onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })} /></div></div><div><Label>Headline</Label><Input required value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} /></div><div><Label>Biography</Label><Textarea required minLength={10} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} /></div><div className="grid gap-4 sm:grid-cols-2"><ProfileUpload label="Avatar" value={profile.avatarUrl} progress={uploadProgress.avatar} onFile={(file) => uploadProfile("avatar", file)} onRemove={() => removeProfileAsset("avatar")} /><ProfileUpload label="Cover" value={profile.coverUrl} progress={uploadProgress["creator-cover"]} onFile={(file) => uploadProfile("creator-cover", file)} onRemove={() => removeProfileAsset("creator-cover")} /></div>{error && <p className="text-sm text-destructive">{error}</p>}<Button disabled={saving}>{saving ? "Saving…" : "Save profile"}</Button></form> : <div className="mt-4"><p className="font-medium">{profile.headline}</p><p className="mt-2 text-sm text-muted-foreground">{profile.bio}</p></div>}
         </div>
         <div className="mt-8 card-elegant rounded-2xl p-6">
           <div className="flex items-center justify-between"><div><h2 className="font-semibold">Recent products</h2><p className="text-sm text-muted-foreground">Your real catalog activity.</p></div><Button variant="outline" asChild><Link to="/creator/products">Manage all</Link></Button></div>
@@ -92,4 +106,8 @@ function CreatorDashboard() {
       </div>
     </DashboardLayout>
   );
+}
+
+function ProfileUpload({ label, value, progress, onFile, onRemove }: { label: string; value: string | null; progress?: number; onFile: (file?: File) => void; onRemove: () => void }) {
+  return <div className="rounded-xl border p-4"><Label>{label}</Label>{value && <img src={value} alt="" className="mt-2 h-24 w-full rounded-lg object-cover" />}<Input className="mt-2" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => onFile(event.target.files?.[0])} />{progress ? <p className="mt-1 text-xs text-muted-foreground">Uploading {progress}%</p> : null}{value && <Button type="button" variant="ghost" size="sm" className="mt-2 text-destructive" onClick={onRemove}>Remove</Button>}</div>;
 }

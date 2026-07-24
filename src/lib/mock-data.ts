@@ -195,6 +195,8 @@ export type Creator = {
   location: string;
   joined: string;
   organization?: string;
+  avatarUrl?: string;
+  coverUrl?: string;
 };
 
 export const creators: Creator[] = [
@@ -341,6 +343,7 @@ export type Product = {
   creator: string; // creator id
   creatorName?: string;
   creatorAvatar?: string;
+  gallery?: string[];
   featured: boolean;
   trending: boolean;
   new: boolean;

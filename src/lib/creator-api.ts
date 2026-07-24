@@ -14,6 +14,8 @@ export type CreatorProduct = {
   status: "draft" | "published" | "unpublished" | "archived"; version: string;
   demoUrl: string | null; repositoryUrl: string | null; documentationUrl: string | null;
   createdAt: string; updatedAt: string; publishedAt: string | null;
+  downloads: number;
+  productFile: { id: string; originalName: string; mimeType: string; sizeBytes: number } | null;
 };
 
 export type CreatorProfileInput = Pick<CreatorProfile, "slug" | "displayName" | "headline" | "bio"> &
