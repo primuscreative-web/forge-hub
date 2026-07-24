@@ -3,7 +3,7 @@ import { SiteLayout } from "@/components/layouts";
 import { CATALOG_API_BASE_URL, resolveProductPage } from "@/lib/catalog-api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/product/$slug")({
@@ -28,7 +28,7 @@ function ProductPage() {
       </main>
       <aside className="space-y-5"><div className="card-elegant rounded-2xl p-6 sticky top-24"><div className="text-3xl font-semibold">{product.free ? "Free" : `$${product.price.toFixed(2)}`}</div><p className="mt-2 text-sm text-muted-foreground">{product.free ? "Available directly from the creator." : "Price shown for reference. Payments are not active yet."}</p>
         {freeAccess ? <Button asChild className="mt-5 w-full gradient-brand text-white"><a href={live.demoUrl ?? `${CATALOG_API_BASE_URL}/products/${product.slug}/download`} target="_blank" rel="noreferrer">{live.demoUrl ? "Access product" : "Download product"} <ExternalLink className="ml-2 size-4" /></a></Button> : <Button className="mt-5 w-full" disabled>Compra indisponível temporariamente</Button>}
-      </div><Link to="/creator/$handle" params={{ handle: creator.handle }} className="card-elegant rounded-2xl p-5 flex items-center gap-3 hover:border-primary/40"><Avatar><AvatarFallback>{creator.avatar}</AvatarFallback></Avatar><div><p className="font-medium">{creator.name}</p><p className="text-xs text-muted-foreground">@{creator.handle}</p></div></Link></aside>
+      </div><Link to="/creator/$handle" params={{ handle: creator.handle }} className="card-elegant rounded-2xl p-5 flex items-center gap-3 hover:border-primary/40"><Avatar>{creator.avatarUrl && <AvatarImage src={creator.avatarUrl} alt={creator.name} />}<AvatarFallback>{creator.name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase()}</AvatarFallback></Avatar><div><p className="font-medium">{creator.name}</p><p className="text-xs text-muted-foreground">@{creator.handle}</p></div></Link></aside>
     </div>
   </div></SiteLayout>;
 }
